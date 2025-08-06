@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import { ArrowLeft, Loader2, X } from "lucide-react";
@@ -48,6 +48,8 @@ export default function CreateSession() {
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [navigationStarted, setNavigationStarted] = useState(false);
 
   const updateSessionState = (updates: Partial<CreateSessionState>) => {
     setSessionState((prev) => ({ ...prev, ...updates }));
@@ -70,6 +72,34 @@ export default function CreateSession() {
       }, 100);
     }
   }, [sessionState.currentStep]);
+
+  // Safety net: Close dialog and reset states if navigation takes too long
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (navigationStarted && !isPending) {
+      // If navigation started but isPending is false, it likely completed
+      // Close dialog after a brief moment to ensure smooth transition
+      timeoutId = setTimeout(() => {
+        setShowConfirmDialog(false);
+        setIsStartingSession(false);
+        setNavigationStarted(false);
+      }, 200);
+    } else if (isStartingSession) {
+      // Fallback safety net - if something goes wrong, reset after 10 seconds
+      timeoutId = setTimeout(() => {
+        setShowConfirmDialog(false);
+        setIsStartingSession(false);
+        setNavigationStarted(false);
+      }, 10000);
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [navigationStarted, isPending, isStartingSession]);
 
   const proceedToNextStep = () => {
     updateSessionState({ currentStep: sessionState.currentStep + 1 });
@@ -126,8 +156,9 @@ export default function CreateSession() {
     });
   };
 
-  const startGameSession = async () => {
+  const startGameSession = () => {
     setIsStartingSession(true);
+    setNavigationStarted(false);
 
     try {
       const initialPlayers: Player[] = sessionState.playerNames.map((name) => ({
@@ -149,12 +180,17 @@ export default function CreateSession() {
       createSession(newSession);
       generateNextMatch(newSession.sessionId);
 
-      // Close dialog and navigate
-      setShowConfirmDialog(false);
-      router.push(`/session/${newSession.sessionId}`);
-    } finally {
-      // Reset loading state in case navigation fails
+      // Mark navigation as started and use startTransition for smooth navigation
+      setNavigationStarted(true);
+      
+      startTransition(() => {
+        router.push(`/session/${newSession.sessionId}`);
+      });
+    } catch (error) {
+      // Reset states if session creation fails
       setIsStartingSession(false);
+      setNavigationStarted(false);
+      console.error('Failed to start session:', error);
     }
   };
 
@@ -433,7 +469,7 @@ export default function CreateSession() {
               <Button
                 variant="outline"
                 onClick={() => setShowConfirmDialog(false)}
-                disabled={isStartingSession}
+                disabled={isStartingSession || isPending}
                 className="sm:order-first"
               >
                 Cancel
@@ -442,13 +478,13 @@ export default function CreateSession() {
                 onClick={() => {
                   startGameSession();
                 }}
-                disabled={isStartingSession}
+                disabled={isStartingSession || isPending}
                 className="font-semibold"
               >
-                {isStartingSession ? (
+                {isStartingSession || isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Starting...
+                    {navigationStarted ? "Opening tournament..." : "Starting..."}
                   </>
                 ) : (
                   "Go!"
