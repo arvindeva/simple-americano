@@ -55,7 +55,7 @@ export default function SessionPage() {
               {currentSession.tournamentName}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Created {formatSessionDate(currentSession.sessionCreatedAt)} • {currentSession.playersList.length} players • {currentSession.numberOfFields} field{currentSession.numberOfFields !== 1 ? 's' : ''} • {currentSession.pointsPerGame} points per game
+              Created {formatSessionDate(currentSession.sessionCreatedAt)} • {currentSession.playersList.length} players • {currentSession.numberOfCourts} court{currentSession.numberOfCourts !== 1 ? 's' : ''} • {currentSession.pointsPerGame} points per game
             </p>
           </div>
           <div className="shrink-0">

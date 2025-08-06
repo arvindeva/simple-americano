@@ -18,7 +18,7 @@ interface MatchTabProps {
 export default function MatchTab({ session }: MatchTabProps) {
   const router = useRouter();
   const { updateMatchScore, generateNextMatch, deleteSession } = useSessionStore();
-  const [currentMatchIndex, setCurrentMatchIndex] = useState(session.matchesList.length - 1);
+  const [currentRound, setCurrentRound] = useState(session.currentRoundNumber);
   const [scoreModalState, setScoreModalState] = useState<{
     isOpen: boolean;
     selectedTeam: 'team1' | 'team2';
@@ -29,26 +29,28 @@ export default function MatchTab({ session }: MatchTabProps) {
     match: null
   });
 
-  const currentMatch = session.matchesList[currentMatchIndex];
-  const isLastMatch = currentMatchIndex === session.matchesList.length - 1;
-  const canNavigateNext = currentMatchIndex < session.matchesList.length - 1;
-  const canNavigatePrevious = currentMatchIndex > 0;
+  const currentRoundMatches = session.matchesList.filter(match => match.roundNumber === currentRound);
+  const maxRound = Math.max(0, ...session.matchesList.map(match => match.roundNumber));
+  const minRound = Math.min(1, ...session.matchesList.map(match => match.roundNumber));
+  const isLastRound = currentRound === maxRound;
+  const canNavigateNext = currentRound < maxRound;
+  const canNavigatePrevious = currentRound > minRound;
 
-  const handlePreviousMatch = () => {
+  const handlePreviousRound = () => {
     if (canNavigatePrevious) {
-      setCurrentMatchIndex(currentMatchIndex - 1);
+      setCurrentRound(currentRound - 1);
     }
   };
 
-  const handleNextMatch = () => {
+  const handleNextRound = () => {
     if (canNavigateNext) {
-      setCurrentMatchIndex(currentMatchIndex + 1);
+      setCurrentRound(currentRound + 1);
     }
   };
 
-  const handleGenerateNextMatch = () => {
+  const handleGenerateNextRound = () => {
     generateNextMatch(session.sessionId);
-    setCurrentMatchIndex(session.matchesList.length);
+    setCurrentRound(maxRound + 1);
   };
 
   const openScoreModal = (selectedTeam: 'team1' | 'team2', match: Match) => {
@@ -61,7 +63,7 @@ export default function MatchTab({ session }: MatchTabProps) {
 
   const handleScoreUpdate = (newScore: [number, number]) => {
     if (scoreModalState.match) {
-      updateMatchScore(session.sessionId, scoreModalState.match.roundNumber, newScore);
+      updateMatchScore(session.sessionId, scoreModalState.match.matchId, newScore);
     }
   };
 
@@ -96,12 +98,12 @@ export default function MatchTab({ session }: MatchTabProps) {
     router.push('/');
   };
 
-  if (!currentMatch) {
+  if (currentRoundMatches.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground mb-4">No matches yet</p>
-        <Button onClick={handleGenerateNextMatch}>
-          Generate First Match
+        <Button onClick={handleGenerateNextRound}>
+          Generate First Round
         </Button>
       </div>
     );
@@ -114,20 +116,20 @@ export default function MatchTab({ session }: MatchTabProps) {
           <Button
             variant="outline"
             size="icon"
-            onClick={handlePreviousMatch}
+            onClick={handlePreviousRound}
             disabled={!canNavigatePrevious}
             className="shrink-0"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <h2 className="text-sm sm:text-lg font-semibold truncate">
-            Round {currentMatch.roundNumber} of {session.matchesList.length}
+            Round {currentRound} of {maxRound || 1}
           </h2>
           {canNavigateNext ? (
             <Button
               variant="outline"
               size="icon"
-              onClick={handleNextMatch}
+              onClick={handleNextRound}
               className="shrink-0"
             >
               <ChevronRight className="h-4 w-4" />
@@ -135,10 +137,10 @@ export default function MatchTab({ session }: MatchTabProps) {
           ) : (
             <Button
               variant="outline"
-              onClick={handleGenerateNextMatch}
+              onClick={handleGenerateNextRound}
               className="px-2 sm:px-4 text-xs sm:text-sm shrink-0"
             >
-              <span className="hidden sm:inline">Generate Next Match</span>
+              <span className="hidden sm:inline">Generate Next Round</span>
               <span className="sm:hidden">Next</span>
             </Button>
           )}
@@ -158,7 +160,7 @@ export default function MatchTab({ session }: MatchTabProps) {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Tournament</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogDescription className="mb-4 sm:mb-6">
                   Are you sure you want to delete this tournament? This action cannot be undone and all match data will be lost.
                 </AlertDialogDescription>
               </AlertDialogHeader>
@@ -173,60 +175,68 @@ export default function MatchTab({ session }: MatchTabProps) {
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3 sm:pb-6">
-          <CardTitle className="text-center text-base sm:text-lg">Match {currentMatch.roundNumber}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg">
-              <div className="flex-1 min-w-0 pr-3">
-                <p className="font-medium text-sm sm:text-base truncate">{getTeamDisplayName(currentMatch.firstTeam)}</p>
+      <div className="space-y-4">
+        {currentRoundMatches.map((match, index) => (
+          <Card key={`${match.matchId}-${index}`}>
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-center text-base sm:text-lg">
+                Court {index + 1}
+                {match.matchScore && (
+                  <span className="ml-2 text-green-600 dark:text-green-400 text-sm">
+                    ✓ Complete
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-center gap-4 sm:gap-6">
+                {/* Team 1 */}
+                <div className="flex flex-col items-center space-y-2 flex-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => openScoreModal('team1', match)}
+                    className="text-2xl sm:text-3xl font-bold h-12 sm:h-14 min-w-[60px] sm:min-w-[80px]"
+                  >
+                    {formatScore(match.matchScore).split('-')[0] || '00'}
+                  </Button>
+                  <div className="text-center space-y-1">
+                    <div className="font-medium text-sm sm:text-base">{match.firstTeam[0]}</div>
+                    <div className="font-medium text-sm sm:text-base">{match.firstTeam[1]}</div>
+                  </div>
+                </div>
+
+                {/* VS */}
+                <div className="text-lg sm:text-xl font-bold text-muted-foreground px-2">
+                  vs
+                </div>
+
+                {/* Team 2 */}
+                <div className="flex flex-col items-center space-y-2 flex-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => openScoreModal('team2', match)}
+                    className="text-2xl sm:text-3xl font-bold h-12 sm:h-14 min-w-[60px] sm:min-w-[80px]"
+                  >
+                    {formatScore(match.matchScore).split('-')[1] || '00'}
+                  </Button>
+                  <div className="text-center space-y-1">
+                    <div className="font-medium text-sm sm:text-base">{match.secondTeam[0]}</div>
+                    <div className="font-medium text-sm sm:text-base">{match.secondTeam[1]}</div>
+                  </div>
+                </div>
               </div>
-              <Button
-                variant="outline"
-                onClick={() => openScoreModal('team1', currentMatch)}
-                className="min-w-[60px] sm:min-w-[80px] h-10 sm:h-11 text-base sm:text-lg font-bold"
-              >
-                {formatScore(currentMatch.matchScore).split('-')[0] || '00'}
-              </Button>
-            </div>
-
-            <div className="text-center text-base sm:text-lg font-bold text-muted-foreground py-2">
-              VS
-            </div>
-
-            <div className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg">
-              <div className="flex-1 min-w-0 pr-3">
-                <p className="font-medium text-sm sm:text-base truncate">{getTeamDisplayName(currentMatch.secondTeam)}</p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => openScoreModal('team2', currentMatch)}
-                className="min-w-[60px] sm:min-w-[80px] h-10 sm:h-11 text-base sm:text-lg font-bold"
-              >
-                {formatScore(currentMatch.matchScore).split('-')[1] || '00'}
-              </Button>
-            </div>
-          </div>
-
-          {currentMatch.matchScore && (
-            <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <p className="text-green-700 dark:text-green-300 font-medium text-sm sm:text-base">
-                Match Complete: {formatScore(currentMatch.matchScore)}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <ScoreModal
         isOpen={scoreModalState.isOpen}
         onClose={closeScoreModal}
         onScoreSelect={handleScoreUpdate}
         maxPoints={session.pointsPerGame}
-        teamOneName={getTeamDisplayName(currentMatch.firstTeam)}
-        teamTwoName={getTeamDisplayName(currentMatch.secondTeam)}
+        teamOneName={scoreModalState.match ? getTeamDisplayName(scoreModalState.match.firstTeam) : ''}
+        teamTwoName={scoreModalState.match ? getTeamDisplayName(scoreModalState.match.secondTeam) : ''}
         selectedTeam={scoreModalState.selectedTeam}
       />
     </div>

@@ -4,6 +4,7 @@ export interface Player {
 }
 
 export interface Match {
+  matchId: string;
   roundNumber: number;
   firstTeam: string[];
   secondTeam: string[];
@@ -13,7 +14,7 @@ export interface Match {
 export interface AmericanoSession {
   sessionId: string;
   tournamentName: string;
-  numberOfFields: number;
+  numberOfCourts: number;
   pointsPerGame: number;
   playersList: Player[];
   matchesList: Match[];
@@ -26,7 +27,7 @@ export interface SessionStore {
   createSession(newSession: AmericanoSession): void;
   updateSession(sessionId: string, sessionUpdates: Partial<AmericanoSession>): void;
   addMatchToSession(sessionId: string, newMatch: Match): void;
-  updateMatchScore(sessionId: string, roundNumber: number, newScore: [number, number]): void;
+  updateMatchScore(sessionId: string, matchId: string, newScore: [number, number]): void;
   generateNextMatch(sessionId: string): void;
   deleteSession(sessionId: string): void;
 }

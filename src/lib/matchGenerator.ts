@@ -1,4 +1,46 @@
 import { Player, Match, MatchGenerationStats, TeamCombination } from '@/types';
+import { nanoid } from 'nanoid';
+
+export function generateRoundMatches(playersList: Player[], existingMatches: Match[], numberOfCourts: number): Match[] {
+  if (playersList.length < numberOfCourts * 4) {
+    throw new Error(`Need at least ${numberOfCourts * 4} players to generate ${numberOfCourts} matches`);
+  }
+
+  const nextRoundNumber = Math.max(0, ...existingMatches.map(match => match.roundNumber)) + 1;
+  const roundMatches: Match[] = [];
+  const usedPlayers = new Set<string>();
+
+  for (let courtIndex = 0; courtIndex < numberOfCourts; courtIndex++) {
+    // Calculate player stats including matches from this round
+    const allMatches = [...existingMatches, ...roundMatches];
+    const playerStats = calculatePlayerStats(playersList, allMatches);
+    
+    // Get available players for this match
+    const availablePlayers = playerStats.filter(stats => !usedPlayers.has(stats.playerName));
+    
+    if (availablePlayers.length < 4) {
+      throw new Error(`Not enough available players for match ${courtIndex + 1}`);
+    }
+
+    const selectedPlayers = selectPlayersForNextMatch(availablePlayers);
+    const optimalTeams = findOptimalTeamCombination(selectedPlayers, playerStats);
+    
+    // Mark these players as used for this round
+    [...optimalTeams.firstTeam, ...optimalTeams.secondTeam].forEach(player => {
+      usedPlayers.add(player);
+    });
+
+    roundMatches.push({
+      matchId: nanoid(),
+      roundNumber: nextRoundNumber,
+      firstTeam: optimalTeams.firstTeam,
+      secondTeam: optimalTeams.secondTeam,
+      matchScore: null
+    });
+  }
+
+  return roundMatches;
+}
 
 export function generateFairMatch(playersList: Player[], existingMatches: Match[]): Match {
   const playerStats = calculatePlayerStats(playersList, existingMatches);
@@ -8,6 +50,7 @@ export function generateFairMatch(playersList: Player[], existingMatches: Match[
   const nextRoundNumber = Math.max(0, ...existingMatches.map(match => match.roundNumber)) + 1;
   
   return {
+    matchId: nanoid(),
     roundNumber: nextRoundNumber,
     firstTeam: optimalTeams.firstTeam,
     secondTeam: optimalTeams.secondTeam,

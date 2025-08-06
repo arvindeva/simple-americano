@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import { ArrowLeft } from "lucide-react";
@@ -19,7 +19,7 @@ import { AmericanoSession, Player } from "@/types";
 interface CreateSessionState {
   currentStep: number;
   tournamentName: string;
-  numberOfFields: number;
+  numberOfCourts: number;
   pointsPerGame: number;
   playerNames: string[];
   newPlayerName: string;
@@ -29,11 +29,12 @@ export default function CreateSession() {
   const router = useRouter();
   const { createSession, generateNextMatch } = useSessionStore();
   const playerInputRef = useRef<HTMLInputElement>(null);
+  const tournamentInputRef = useRef<HTMLInputElement>(null);
 
   const [sessionState, setSessionState] = useState<CreateSessionState>({
     currentStep: 1,
     tournamentName: "",
-    numberOfFields: 0,
+    numberOfCourts: 0,
     pointsPerGame: 0,
     playerNames: [],
     newPlayerName: "",
@@ -42,6 +43,24 @@ export default function CreateSession() {
   const updateSessionState = (updates: Partial<CreateSessionState>) => {
     setSessionState((prev) => ({ ...prev, ...updates }));
   };
+
+  // Auto-focus tournament input on component mount
+  useEffect(() => {
+    if (sessionState.currentStep === 1) {
+      setTimeout(() => {
+        tournamentInputRef.current?.focus();
+      }, 100);
+    }
+  }, []);
+
+  // Auto-focus player input when transitioning to step 4
+  useEffect(() => {
+    if (sessionState.currentStep === 4) {
+      setTimeout(() => {
+        playerInputRef.current?.focus();
+      }, 100);
+    }
+  }, [sessionState.currentStep]);
 
   const proceedToNextStep = () => {
     updateSessionState({ currentStep: sessionState.currentStep + 1 });
@@ -55,14 +74,14 @@ export default function CreateSession() {
     }
   };
 
-  const proceedToFieldSelection = () => {
+  const proceedToCourtSelection = () => {
     if (sessionState.tournamentName.trim()) {
       proceedToNextStep();
     }
   };
 
-  const selectNumberOfFields = (fieldCount: number) => {
-    updateSessionState({ numberOfFields: fieldCount });
+  const selectNumberOfCourts = (courtCount: number) => {
+    updateSessionState({ numberOfCourts: courtCount });
     proceedToNextStep();
   };
 
@@ -107,7 +126,7 @@ export default function CreateSession() {
     const newSession: AmericanoSession = {
       sessionId: nanoid(),
       tournamentName: sessionState.tournamentName.trim(),
-      numberOfFields: sessionState.numberOfFields,
+      numberOfCourts: sessionState.numberOfCourts,
       pointsPerGame: sessionState.pointsPerGame,
       playersList: initialPlayers,
       matchesList: [],
@@ -122,7 +141,7 @@ export default function CreateSession() {
 
   const handleTournamentNameKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
-      proceedToFieldSelection();
+      proceedToCourtSelection();
     }
   };
 
@@ -138,10 +157,10 @@ export default function CreateSession() {
     if (sessionState.currentStep > 1 && sessionState.tournamentName) {
       progressItems.push(`Tournament: ${sessionState.tournamentName}`);
     }
-    if (sessionState.currentStep > 2 && sessionState.numberOfFields > 0) {
+    if (sessionState.currentStep > 2 && sessionState.numberOfCourts > 0) {
       progressItems.push(
-        `${sessionState.numberOfFields} field${
-          sessionState.numberOfFields > 1 ? "s" : ""
+        `${sessionState.numberOfCourts} court${
+          sessionState.numberOfCourts > 1 ? "s" : ""
         }`
       );
     }
@@ -184,6 +203,7 @@ export default function CreateSession() {
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
               <Input
+                ref={tournamentInputRef}
                 placeholder="Enter tournament name"
                 value={sessionState.tournamentName}
                 onChange={(e) =>
@@ -195,7 +215,7 @@ export default function CreateSession() {
               />
               <div className="flex flex-col gap-2">
                 <Button
-                  onClick={proceedToFieldSelection}
+                  onClick={proceedToCourtSelection}
                   disabled={!sessionState.tournamentName.trim()}
                   className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold"
                 >
@@ -218,7 +238,7 @@ export default function CreateSession() {
           <Card className="w-full">
             <CardHeader className="text-center p-4 sm:p-6">
               <CardTitle className="text-lg sm:text-xl">
-                How many fields?
+                How many courts?
               </CardTitle>
               <CardDescription className="text-sm sm:text-base">
                 Select the number of padel courts available
@@ -226,14 +246,14 @@ export default function CreateSession() {
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
               <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {[1, 2, 3, 4, 5, 6].map((fieldCount) => (
+                {[1, 2, 3, 4, 5, 6].map((courtCount) => (
                   <Button
-                    key={fieldCount}
-                    onClick={() => selectNumberOfFields(fieldCount)}
+                    key={courtCount}
+                    onClick={() => selectNumberOfCourts(courtCount)}
                     variant="outline"
                     className="h-12 sm:h-16 text-base sm:text-lg font-semibold"
                   >
-                    {fieldCount}
+                    {courtCount}
                   </Button>
                 ))}
               </div>
@@ -288,13 +308,13 @@ export default function CreateSession() {
           <Card className="w-full">
             <CardHeader className="text-center p-4 sm:p-6">
               <CardTitle className="text-sm sm:text-lg">Add Players</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Minimum {sessionState.numberOfCourts * 4} players required ({sessionState.numberOfCourts} court{sessionState.numberOfCourts > 1 ? 's' : ''} × 4 players each)
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
               {sessionState.playerNames.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm sm:text-base">
-                    Players ({sessionState.playerNames.length}):
-                  </h4>
                   <div className="space-y-1 max-h-32 sm:max-h-40 overflow-y-auto">
                     {sessionState.playerNames.map((playerName, index) => (
                       <div
@@ -340,10 +360,10 @@ export default function CreateSession() {
               <div className="flex flex-col gap-2 pt-2">
                 <Button
                   onClick={startGameSession}
-                  disabled={sessionState.playerNames.length < 4}
+                  disabled={sessionState.playerNames.length < sessionState.numberOfCourts * 4}
                   className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold"
                 >
-                  Start Games ({sessionState.playerNames.length}/4+ players)
+                  Start Games ({sessionState.playerNames.length}/{sessionState.numberOfCourts * 4}+ players)
                 </Button>
                 <Button
                   onClick={returnToPreviousStep}

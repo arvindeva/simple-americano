@@ -96,8 +96,8 @@ export default function HomePage() {
                             Created{" "}
                             {formatSessionDate(session.sessionCreatedAt)} •{" "}
                             {session.playersList.length} players •{" "}
-                            {session.numberOfFields} field
-                            {session.numberOfFields !== 1 ? "s" : ""} •{" "}
+                            {session.numberOfCourts} court
+                            {session.numberOfCourts !== 1 ? "s" : ""} •{" "}
                             {session.pointsPerGame} points
                           </CardDescription>
                         </div>
