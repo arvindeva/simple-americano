@@ -64,7 +64,7 @@ export default function ResultsTab({ session }: ResultsTabProps) {
         <CardContent className="p-4 sm:p-6 pt-2 sm:pt-3">
           {/* Header Row */}
           <div className="grid grid-cols-4 gap-2 sm:gap-4 p-2 sm:p-3 mb-2 sm:mb-3 bg-muted/50 rounded-lg text-xs sm:text-sm font-medium text-muted-foreground">
-            <div>Name</div>
+            <div className="pl-4">Name</div>
             <div className="text-center">W-L-T</div>
             <div className="text-center">Games</div>
             <div className="text-center">Points</div>
