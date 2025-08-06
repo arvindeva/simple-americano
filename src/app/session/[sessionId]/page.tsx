@@ -53,7 +53,7 @@ export default function SessionPage() {
             </Button>
           </Link>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-4xl font-bold truncate font-bangers tracking-wider">
+            <h1 className="text-2xl sm:text-4xl font-bold truncate font-quantico">
               {currentSession.tournamentName}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow } from "next/font/google";
-import { Bangers } from "next/font/google";
+import { Quantico } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import ThemedTopLoader from "@/components/ThemedTopLoader";
@@ -11,10 +11,10 @@ const barlow = Barlow({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const bangers = Bangers({
-  variable: "--font-bangers",
+const quantico = Quantico({
+  variable: "--font-quantico",
   subsets: ["latin"],
-  weight: ["400"], // Bangers only has one weight
+  weight: ["400", "700"], // Quantico has regular and bold weights
 });
 
 export const metadata: Metadata = {
@@ -44,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${barlow.variable} ${bangers.variable} font-sans antialiased`}
+        className={`${barlow.variable} ${quantico.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"

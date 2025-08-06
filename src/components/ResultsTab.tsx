@@ -49,7 +49,7 @@ export default function ResultsTab({ session }: ResultsTabProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between pt-2 gap-3">
-        <h2 className="text-base sm:text-lg font-semibold">
+        <h2 className="text-base sm:text-lg font-semibold font-quantico">
           Tournament Results
         </h2>
         <div className="text-xs sm:text-sm text-muted-foreground shrink-0">
@@ -59,7 +59,9 @@ export default function ResultsTab({ session }: ResultsTabProps) {
 
       <Card>
         <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
-          <CardTitle className="text-base sm:text-lg">Leaderboard</CardTitle>
+          <CardTitle className="text-base sm:text-lg font-quantico">
+            Leaderboard
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-2 sm:pt-3">
           {/* Header Row */}
@@ -69,7 +71,7 @@ export default function ResultsTab({ session }: ResultsTabProps) {
             <div className="text-center">Games</div>
             <div className="text-center">Points</div>
           </div>
-          
+
           <div className="space-y-2 sm:space-y-3">
             {sortedPlayersByPoints.map((player, index) => {
               const ranking = getRankingPosition(
@@ -93,9 +95,13 @@ export default function ResultsTab({ session }: ResultsTabProps) {
                     <span className="text-xs sm:text-sm font-medium text-muted-foreground shrink-0">
                       {ranking}.
                     </span>
-                    <span className={`font-medium text-sm sm:text-base truncate ${
-                      isTopPlayer ? "text-yellow-700 dark:text-yellow-300" : ""
-                    }`}>
+                    <span
+                      className={`font-medium text-sm sm:text-base truncate ${
+                        isTopPlayer
+                          ? "text-yellow-700 dark:text-yellow-300"
+                          : ""
+                      }`}
+                    >
                       {player.name}
                     </span>
                   </div>
@@ -141,7 +147,7 @@ export default function ResultsTab({ session }: ResultsTabProps) {
 
       <Card>
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">
+          <CardTitle className="text-base sm:text-lg font-quantico">
             Tournament Statistics
           </CardTitle>
         </CardHeader>

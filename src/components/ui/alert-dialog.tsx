@@ -1,5 +1,5 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface AlertDialogProps {
   open?: boolean;
@@ -37,11 +37,13 @@ interface AlertDialogTriggerProps {
   asChild?: boolean;
 }
 
-interface AlertDialogActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface AlertDialogActionProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
-interface AlertDialogCancelProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface AlertDialogCancelProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
@@ -50,10 +52,14 @@ const AlertDialogContext = React.createContext<{
   setOpen: (open: boolean) => void;
 }>({
   open: false,
-  setOpen: () => {}
+  setOpen: () => {},
 });
 
-const AlertDialog: React.FC<AlertDialogProps> = ({ open, onOpenChange, children }) => {
+const AlertDialog: React.FC<AlertDialogProps> = ({
+  open,
+  onOpenChange,
+  children,
+}) => {
   const [isOpen, setIsOpen] = React.useState(open || false);
 
   React.useEffect(() => {
@@ -70,13 +76,18 @@ const AlertDialog: React.FC<AlertDialogProps> = ({ open, onOpenChange, children 
   };
 
   return (
-    <AlertDialogContext.Provider value={{ open: isOpen, setOpen: handleOpenChange }}>
+    <AlertDialogContext.Provider
+      value={{ open: isOpen, setOpen: handleOpenChange }}
+    >
       {children}
     </AlertDialogContext.Provider>
   );
 };
 
-const AlertDialogTrigger: React.FC<AlertDialogTriggerProps> = ({ children, asChild }) => {
+const AlertDialogTrigger: React.FC<AlertDialogTriggerProps> = ({
+  children,
+  asChild,
+}) => {
   const { setOpen } = React.useContext(AlertDialogContext);
 
   const handleClick = () => {
@@ -85,35 +96,34 @@ const AlertDialogTrigger: React.FC<AlertDialogTriggerProps> = ({ children, asChi
 
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children, {
-      onClick: handleClick
+      onClick: handleClick,
     } as any);
   }
 
-  return (
-    <button onClick={handleClick}>
-      {children}
-    </button>
-  );
+  return <button onClick={handleClick}>{children}</button>;
 };
 
-const AlertDialogContent: React.FC<AlertDialogContentProps> = ({ children, className }) => {
+const AlertDialogContent: React.FC<AlertDialogContentProps> = ({
+  children,
+  className,
+}) => {
   const { open, setOpen } = React.useContext(AlertDialogContext);
 
   React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setOpen(false);
       }
     };
 
     if (open) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [open, setOpen]);
 
@@ -137,31 +147,56 @@ const AlertDialogContent: React.FC<AlertDialogContentProps> = ({ children, class
   );
 };
 
-const AlertDialogHeader: React.FC<AlertDialogHeaderProps> = ({ children, className }) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left p-6 pb-0", className)}>
+const AlertDialogHeader: React.FC<AlertDialogHeaderProps> = ({
+  children,
+  className,
+}) => (
+  <div
+    className={cn(
+      "flex flex-col space-y-2 text-center sm:text-left p-6 pb-0",
+      className
+    )}
+  >
     {children}
   </div>
 );
 
-const AlertDialogTitle: React.FC<AlertDialogTitleProps> = ({ children, className }) => (
-  <h2 className={cn("text-lg font-semibold", className)}>
+const AlertDialogTitle: React.FC<AlertDialogTitleProps> = ({
+  children,
+  className,
+}) => (
+  <h2 className={cn("text-lg font-semibold font-quantico", className)}>
     {children}
   </h2>
 );
 
-const AlertDialogDescription: React.FC<AlertDialogDescriptionProps> = ({ children, className }) => (
-  <p className={cn("text-sm text-muted-foreground", className)}>
-    {children}
-  </p>
+const AlertDialogDescription: React.FC<AlertDialogDescriptionProps> = ({
+  children,
+  className,
+}) => (
+  <p className={cn("text-sm text-muted-foreground", className)}>{children}</p>
 );
 
-const AlertDialogFooter: React.FC<AlertDialogFooterProps> = ({ children, className }) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-0", className)}>
+const AlertDialogFooter: React.FC<AlertDialogFooterProps> = ({
+  children,
+  className,
+}) => (
+  <div
+    className={cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-0",
+      className
+    )}
+  >
     {children}
   </div>
 );
 
-const AlertDialogAction: React.FC<AlertDialogActionProps> = ({ children, className, onClick, ...props }) => {
+const AlertDialogAction: React.FC<AlertDialogActionProps> = ({
+  children,
+  className,
+  onClick,
+  ...props
+}) => {
   const { setOpen } = React.useContext(AlertDialogContext);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -183,7 +218,12 @@ const AlertDialogAction: React.FC<AlertDialogActionProps> = ({ children, classNa
   );
 };
 
-const AlertDialogCancel: React.FC<AlertDialogCancelProps> = ({ children, className, onClick, ...props }) => {
+const AlertDialogCancel: React.FC<AlertDialogCancelProps> = ({
+  children,
+  className,
+  onClick,
+  ...props
+}) => {
   const { setOpen } = React.useContext(AlertDialogContext);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -215,4 +255,4 @@ export {
   AlertDialogFooter,
   AlertDialogAction,
   AlertDialogCancel,
-}
+};

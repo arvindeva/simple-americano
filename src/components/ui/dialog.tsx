@@ -1,5 +1,5 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface DialogProps {
   open?: boolean;
@@ -32,7 +32,7 @@ const DialogContext = React.createContext<{
   setOpen: (open: boolean) => void;
 }>({
   open: false,
-  setOpen: () => {}
+  setOpen: () => {},
 });
 
 const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
@@ -67,35 +67,34 @@ const DialogTrigger: React.FC<DialogTriggerProps> = ({ children, asChild }) => {
 
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children, {
-      onClick: handleClick
+      onClick: handleClick,
     } as any);
   }
 
-  return (
-    <button onClick={handleClick}>
-      {children}
-    </button>
-  );
+  return <button onClick={handleClick}>{children}</button>;
 };
 
-const DialogContent: React.FC<DialogContentProps> = ({ children, className }) => {
+const DialogContent: React.FC<DialogContentProps> = ({
+  children,
+  className,
+}) => {
   const { open, setOpen } = React.useContext(DialogContext);
 
   React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setOpen(false);
       }
     };
 
     if (open) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [open, setOpen]);
 
@@ -104,7 +103,7 @@ const DialogContent: React.FC<DialogContentProps> = ({ children, className }) =>
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-black/50 dark:bg-black/80"
         onClick={() => setOpen(false)}
       />
       <div
@@ -120,15 +119,25 @@ const DialogContent: React.FC<DialogContentProps> = ({ children, className }) =>
 };
 
 const DialogHeader: React.FC<DialogHeaderProps> = ({ children, className }) => (
-  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left p-6 pb-0", className)}>
+  <div
+    className={cn(
+      "flex flex-col space-y-1.5 text-center sm:text-left p-6 pb-0",
+      className
+    )}
+  >
     {children}
   </div>
 );
 
 const DialogTitle: React.FC<DialogTitleProps> = ({ children, className }) => (
-  <h2 className={cn("text-lg font-semibold leading-none tracking-tight", className)}>
+  <h2
+    className={cn(
+      "text-lg font-semibold leading-none tracking-tight font-quantico",
+      className
+    )}
+  >
     {children}
   </h2>
 );
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger }
+export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger };

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, X } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -45,7 +45,7 @@ export default function CreateSession() {
     playerNames: [],
     newPlayerName: "",
   });
-  
+
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
 
@@ -128,7 +128,7 @@ export default function CreateSession() {
 
   const startGameSession = async () => {
     setIsStartingSession(true);
-    
+
     try {
       const initialPlayers: Player[] = sessionState.playerNames.map((name) => ({
         name,
@@ -148,7 +148,7 @@ export default function CreateSession() {
 
       createSession(newSession);
       generateNextMatch(newSession.sessionId);
-      
+
       // Close dialog and navigate
       setShowConfirmDialog(false);
       router.push(`/session/${newSession.sessionId}`);
@@ -191,7 +191,17 @@ export default function CreateSession() {
 
     return (
       <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
-        <div className="text-sm font-medium">{progressItems.join(" • ")}</div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={returnToPreviousStep}
+            className="shrink-0 h-8 w-8"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-sm font-medium">{progressItems.join(" • ")}</div>
+        </div>
       </div>
     );
   };
@@ -200,26 +210,17 @@ export default function CreateSession() {
     switch (sessionState.currentStep) {
       case 1:
         return (
-          <Card className="w-full">
-            <CardHeader className="text-center p-4 sm:p-6 relative">
-              <div className="absolute top-4 left-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={returnToPreviousStep}
-                  className="shrink-0"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </div>
-              <CardTitle className="text-lg sm:text-xl">
+          <div className="w-full space-y-6">
+            <div className="text-center">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2 font-quantico">
                 Tournament Name
-              </CardTitle>
-              <CardDescription className="text-sm sm:text-base">
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Give your tournament a name
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 p-4 sm:p-6">
+              </p>
+            </div>
+
+            <div className="space-y-4">
               <Input
                 ref={tournamentInputRef}
                 placeholder="Enter tournament name"
@@ -247,92 +248,79 @@ export default function CreateSession() {
                   Cancel
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         );
 
       case 2:
         return (
-          <Card className="w-full">
-            <CardHeader className="text-center p-4 sm:p-6">
-              <CardTitle className="text-lg sm:text-xl">
+          <div className="w-full space-y-6">
+            <div className="text-center">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2 font-quantico">
                 How many courts?
-              </CardTitle>
-              <CardDescription className="text-sm sm:text-base">
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Select the number of padel courts available
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {[1, 2, 3, 4, 5, 6].map((courtCount) => (
-                  <Button
-                    key={courtCount}
-                    onClick={() => selectNumberOfCourts(courtCount)}
-                    variant="outline"
-                    className="h-12 sm:h-16 text-base sm:text-lg font-semibold"
-                  >
-                    {courtCount}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                onClick={returnToPreviousStep}
-                variant="ghost"
-                className="w-full mt-4"
-              >
-                Back
-              </Button>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {[1, 2, 3, 4, 5, 6].map((courtCount) => (
+                <Button
+                  key={courtCount}
+                  onClick={() => selectNumberOfCourts(courtCount)}
+                  variant="outline"
+                  className="h-12 sm:h-16 text-base sm:text-lg font-semibold"
+                >
+                  {courtCount}
+                </Button>
+              ))}
+            </div>
+          </div>
         );
 
       case 3:
         return (
-          <Card className="w-full">
-            <CardHeader className="text-center p-4 sm:p-6">
-              <CardTitle className="text-lg sm:text-xl">
+          <div className="w-full space-y-6">
+            <div className="text-center">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2 font-quantico">
                 Points per game?
-              </CardTitle>
-              <CardDescription className="text-sm sm:text-base">
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Select the target score for each match
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 p-4 sm:p-6">
-              <div className="flex flex-col gap-2 sm:gap-3">
-                {[16, 21, 24].map((points) => (
-                  <Button
-                    key={points}
-                    onClick={() => selectPointsPerGame(points)}
-                    variant="outline"
-                    className="h-12 sm:h-16 text-base sm:text-lg font-semibold"
-                  >
-                    {points} points
-                  </Button>
-                ))}
-              </div>
-              <Button
-                onClick={returnToPreviousStep}
-                variant="ghost"
-                className="w-full mt-4"
-              >
-                Back
-              </Button>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:gap-3">
+              {[16, 21, 24].map((points) => (
+                <Button
+                  key={points}
+                  onClick={() => selectPointsPerGame(points)}
+                  variant="outline"
+                  className="h-12 sm:h-16 text-base sm:text-lg font-semibold"
+                >
+                  {points} points
+                </Button>
+              ))}
+            </div>
+          </div>
         );
 
       case 4:
         return (
-          <Card className="w-full">
-            <CardHeader className="text-center p-3 sm:p-4">
-              <CardTitle className="text-md sm:text-lg">Add Players</CardTitle>
-              <CardDescription className="text-sm sm:text-base">
+          <div className="w-full space-y-6">
+            <div className="text-center">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2 font-quantico">
+                Add Players
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Minimum {sessionState.numberOfCourts * 4} players required.{" "}
                 {sessionState.playerNames.length}/
                 {sessionState.numberOfCourts * 4}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 p-4 sm:p-6">
+              </p>
+            </div>
+
+            <div className="space-y-4">
               {sessionState.playerNames.length > 0 && (
                 <div className="space-y-2">
                   <div className="space-y-1 max-h-32 sm:max-h-40 overflow-y-auto">
@@ -350,15 +338,16 @@ export default function CreateSession() {
                             onClick={() => removePlayerFromList(playerName)}
                             variant="ghost"
                             size="sm"
-                            className="h-8 px-2 text-xs shrink-0"
+                            className="h-8 w-8 p-0 shrink-0"
                           >
-                            Remove
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       ))}
                   </div>
                 </div>
               )}
+
               <div className="flex gap-2">
                 <Input
                   ref={playerInputRef}
@@ -388,18 +377,8 @@ export default function CreateSession() {
                   Go!
                 </Button>
               </div>
-
-              <div className="flex flex-col gap-2 pt-2">
-                <Button
-                  onClick={returnToPreviousStep}
-                  variant="ghost"
-                  className="w-full h-10"
-                >
-                  Back
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         );
 
       default:
@@ -413,7 +392,7 @@ export default function CreateSession() {
         {renderProgressIndicator()}
         {renderCurrentStep()}
       </div>
-      
+
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -438,7 +417,7 @@ export default function CreateSession() {
                 <span>{sessionState.playerNames.length}</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <p className="text-sm font-medium">Players list:</p>
               <div className="max-h-40 overflow-y-auto bg-muted/50 rounded-lg p-3 space-y-1">
@@ -449,7 +428,7 @@ export default function CreateSession() {
                 ))}
               </div>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end pt-2">
               <Button
                 variant="outline"

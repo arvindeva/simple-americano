@@ -48,8 +48,10 @@ export default function HomePage() {
           <div className="absolute top-1 right-1">
             <ThemeToggle />
           </div>
-          <h1 className="text-4xl sm:text-6xl font-bold py-4 font-bangers tracking-wider">
+          <h1 className="text-4xl sm:text-6xl font-bold py-4 font-quantico uppercase">
             Americano
+            <br />
+            Padel
           </h1>
         </header>
 
@@ -73,7 +75,7 @@ export default function HomePage() {
 
         {sessionsList.length > 0 && (
           <div className="space-y-3 sm:space-y-4 px-3 sm:px-0">
-            <h2 className="text-lg sm:text-xl font-semibold">
+            <h2 className="text-lg sm:text-xl font-semibold font-quantico">
               Your Tournaments
             </h2>
             <div className="grid gap-2 sm:gap-3">
@@ -86,7 +88,7 @@ export default function HomePage() {
                     <CardHeader className="pb-2 sm:pb-3 p-4 sm:p-6">
                       <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base sm:text-lg truncate">
+                          <CardTitle className="text-base sm:text-lg truncate font-quantico">
                             {session.tournamentName}
                           </CardTitle>
                           <CardDescription className="mt-1 text-xs sm:text-sm">
@@ -126,7 +128,9 @@ export default function HomePage() {
         {sessionsList.length === 0 && (
           <Card className="text-center py-12">
             <CardContent>
-              <h3 className="text-lg font-medium mb-2">No tournaments yet</h3>
+              <h3 className="text-lg font-medium mb-2 font-quantico">
+                No tournaments yet
+              </h3>
               <p className="text-muted-foreground mb-6">
                 Create your first Americano tournament to get started
               </p>

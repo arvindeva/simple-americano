@@ -143,7 +143,7 @@ export default function MatchTab({ session }: MatchTabProps) {
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-sm sm:text-lg font-semibold truncate">
+          <h2 className="text-sm sm:text-lg font-semibold truncate font-quantico">
             Round {currentRound} of {maxRound || 1}
           </h2>
           {canNavigateNext ? (
