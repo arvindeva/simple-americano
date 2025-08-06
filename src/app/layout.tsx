@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Barlow } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
+import ThemedTopLoader from "@/components/ThemedTopLoader";
 
 const barlow = Barlow({
   variable: "--font-barlow",
@@ -14,12 +15,13 @@ export const metadata: Metadata = {
   description: "Tournament organizer for fair and fun padel matches",
   manifest: "/manifest.json",
   themeColor: "#000000",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  viewport:
+    "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Americano Padel"
-  }
+    title: "Americano Padel",
+  },
 };
 
 export default function RootLayout({
@@ -29,15 +31,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${barlow.variable} font-sans antialiased`}
-      >
+      <body className={`${barlow.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
+          <ThemedTopLoader />
           {children}
         </ThemeProvider>
       </body>
