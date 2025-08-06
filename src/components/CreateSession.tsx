@@ -148,6 +148,9 @@ export default function CreateSession() {
 
       createSession(newSession);
       generateNextMatch(newSession.sessionId);
+      
+      // Close dialog and navigate
+      setShowConfirmDialog(false);
       router.push(`/session/${newSession.sessionId}`);
     } finally {
       // Reset loading state in case navigation fails
@@ -458,7 +461,6 @@ export default function CreateSession() {
               </Button>
               <Button
                 onClick={() => {
-                  setShowConfirmDialog(false);
                   startGameSession();
                 }}
                 disabled={isStartingSession}

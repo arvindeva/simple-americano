@@ -48,7 +48,7 @@ export default function ResultsTab({ session }: ResultsTabProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between pt-2 gap-3">
         <h2 className="text-base sm:text-lg font-semibold">
           Tournament Results
         </h2>
@@ -62,6 +62,14 @@ export default function ResultsTab({ session }: ResultsTabProps) {
           <CardTitle className="text-base sm:text-lg">Leaderboard</CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-2 sm:pt-3">
+          {/* Header Row */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-4 p-2 sm:p-3 mb-2 sm:mb-3 bg-muted/50 rounded-lg text-xs sm:text-sm font-medium text-muted-foreground">
+            <div>Name</div>
+            <div className="text-center">W-L-T</div>
+            <div className="text-center">Games</div>
+            <div className="text-center">Points</div>
+          </div>
+          
           <div className="space-y-2 sm:space-y-3">
             {sortedPlayersByPoints.map((player, index) => {
               const ranking = getRankingPosition(
@@ -74,42 +82,49 @@ export default function ResultsTab({ session }: ResultsTabProps) {
               return (
                 <div
                   key={player.name}
-                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg ${
+                  className={`grid grid-cols-4 gap-2 sm:gap-4 items-center p-2 sm:p-3 rounded-lg ${
                     isTopPlayer
                       ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800"
                       : "bg-muted"
                   }`}
                 >
-                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    <div
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0 ${
-                        isTopPlayer
-                          ? "bg-yellow-500 text-white"
-                          : "bg-primary text-primary-foreground"
-                      }`}
-                    >
-                      {ranking}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm sm:text-base truncate">
-                        {player.name}
-                      </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
-                        {player.gamesPlayed} games played
-                      </p>
-                    </div>
+                  {/* Name column with rank */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs sm:text-sm font-medium text-muted-foreground shrink-0">
+                      {ranking}.
+                    </span>
+                    <span className={`font-medium text-sm sm:text-base truncate ${
+                      isTopPlayer ? "text-yellow-700 dark:text-yellow-300" : ""
+                    }`}>
+                      {player.name}
+                    </span>
                   </div>
 
-                  <div className="text-right shrink-0">
-                    <div
-                      className={`text-base sm:text-lg font-bold ${
+                  {/* W-L-T column */}
+                  <div className="text-center">
+                    <span className="text-xs sm:text-sm font-mono">
+                      {player.wins}-{player.losses}-{player.ties}
+                    </span>
+                  </div>
+
+                  {/* Games Played column */}
+                  <div className="text-center">
+                    <span className="text-xs sm:text-sm">
+                      {player.gamesPlayed}
+                    </span>
+                  </div>
+
+                  {/* Points column */}
+                  <div className="text-center">
+                    <span
+                      className={`text-sm sm:text-base font-bold ${
                         isTopPlayer
                           ? "text-yellow-700 dark:text-yellow-300"
                           : ""
                       }`}
                     >
                       {player.totalPoints}
-                    </div>
+                    </span>
                   </div>
                 </div>
               );
