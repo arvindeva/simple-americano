@@ -45,8 +45,8 @@ export default function SessionPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-2 sm:space-y-4">
-        <header className="flex items-center gap-2 sm:gap-3 py-2 sm:py-3">
+      <div className="max-w-4xl mx-auto p-2 sm:p-4 space-y-2 sm:space-y-4">
+        <header className="flex items-center gap-2 sm:gap-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="shrink-0">
               <ArrowLeft className="h-4 w-4" />

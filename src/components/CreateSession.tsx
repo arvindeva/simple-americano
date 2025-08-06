@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useSessionStore } from "@/store/useSessionStore";
 import { AmericanoSession, Player } from "@/types";
 
@@ -39,6 +45,9 @@ export default function CreateSession() {
     playerNames: [],
     newPlayerName: "",
   });
+  
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
 
   const updateSessionState = (updates: Partial<CreateSessionState>) => {
     setSessionState((prev) => ({ ...prev, ...updates }));
@@ -117,26 +126,33 @@ export default function CreateSession() {
     });
   };
 
-  const startGameSession = () => {
-    const initialPlayers: Player[] = sessionState.playerNames.map((name) => ({
-      name,
-      gamesPlayed: 0,
-    }));
+  const startGameSession = async () => {
+    setIsStartingSession(true);
+    
+    try {
+      const initialPlayers: Player[] = sessionState.playerNames.map((name) => ({
+        name,
+        gamesPlayed: 0,
+      }));
 
-    const newSession: AmericanoSession = {
-      sessionId: nanoid(),
-      tournamentName: sessionState.tournamentName.trim(),
-      numberOfCourts: sessionState.numberOfCourts,
-      pointsPerGame: sessionState.pointsPerGame,
-      playersList: initialPlayers,
-      matchesList: [],
-      currentRoundNumber: 0,
-      sessionCreatedAt: new Date().toISOString(),
-    };
+      const newSession: AmericanoSession = {
+        sessionId: nanoid(),
+        tournamentName: sessionState.tournamentName.trim(),
+        numberOfCourts: sessionState.numberOfCourts,
+        pointsPerGame: sessionState.pointsPerGame,
+        playersList: initialPlayers,
+        matchesList: [],
+        currentRoundNumber: 0,
+        sessionCreatedAt: new Date().toISOString(),
+      };
 
-    createSession(newSession);
-    generateNextMatch(newSession.sessionId);
-    router.push(`/session/${newSession.sessionId}`);
+      createSession(newSession);
+      generateNextMatch(newSession.sessionId);
+      router.push(`/session/${newSession.sessionId}`);
+    } finally {
+      // Reset loading state in case navigation fails
+      setIsStartingSession(false);
+    }
   };
 
   const handleTournamentNameKeyPress = (event: React.KeyboardEvent) => {
@@ -359,7 +375,7 @@ export default function CreateSession() {
                   Add
                 </Button>
                 <Button
-                  onClick={startGameSession}
+                  onClick={() => setShowConfirmDialog(true)}
                   disabled={
                     sessionState.playerNames.length <
                     sessionState.numberOfCourts * 4
@@ -390,10 +406,77 @@ export default function CreateSession() {
 
   return (
     <div className="min-h-screen p-2 sm:p-4 bg-background">
-      <div className="w-full max-w-md mx-auto pt-2 sm:pt-8">
+      <div className="w-full max-w-md mx-auto pt-1 sm:pt-4">
         {renderProgressIndicator()}
         {renderCurrentStep()}
       </div>
+      
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ready to start the tournament?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-6">
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">Tournament:</span>
+                <span>{sessionState.tournamentName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Courts:</span>
+                <span>{sessionState.numberOfCourts}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Points per game:</span>
+                <span>{sessionState.pointsPerGame}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Players:</span>
+                <span>{sessionState.playerNames.length}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Players list:</p>
+              <div className="max-h-40 overflow-y-auto bg-muted/50 rounded-lg p-3 space-y-1">
+                {sessionState.playerNames.map((player, index) => (
+                  <div key={index} className="text-sm py-1">
+                    {index + 1}. {player}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={isStartingSession}
+                className="sm:order-first"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowConfirmDialog(false);
+                  startGameSession();
+                }}
+                disabled={isStartingSession}
+                className="font-semibold"
+              >
+                {isStartingSession ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Starting...
+                  </>
+                ) : (
+                  "Go!"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

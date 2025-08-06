@@ -29,7 +29,7 @@ export default function HomePage() {
   }, [createSession]);
 
   useEffect(() => {
-    setSessionsList(Object.values(sessionsMap));
+    setSessionsList(Object.values(sessionsMap).reverse());
   }, [sessionsMap]);
 
   const formatSessionDate = (isoString: string) => {
@@ -42,7 +42,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
       <div className="max-w-2xl mx-auto space-y-2 sm:space-y-6">
         <header className="text-center py-2 sm:py-4 relative">
           <div className="absolute top-1 right-1">
