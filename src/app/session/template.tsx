@@ -13,7 +13,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         ease: [0.22, 1, 0.36, 1],
         type: "tween",
       }}
-      className="min-h-screen"
+      className="min-h-screen overflow-auto"
       style={{
         position: "fixed",
         top: 0,
