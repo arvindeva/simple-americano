@@ -305,34 +305,38 @@ export default function CreateSession() {
       case 4:
         return (
           <Card className="w-full">
-            <CardHeader className="text-center p-2 sm:p-4">
-              <CardTitle className="text-sm sm:text-lg">Add Players</CardTitle>
+            <CardHeader className="text-center p-3 sm:p-4">
+              <CardTitle className="text-md sm:text-lg">Add Players</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                Minimum {sessionState.numberOfCourts * 4} players required.
+                Minimum {sessionState.numberOfCourts * 4} players required.{" "}
+                {sessionState.playerNames.length}/
+                {sessionState.numberOfCourts * 4}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
               {sessionState.playerNames.length > 0 && (
                 <div className="space-y-2">
                   <div className="space-y-1 max-h-32 sm:max-h-40 overflow-y-auto">
-                    {[...sessionState.playerNames].reverse().map((playerName, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between bg-muted p-2 sm:p-3 rounded"
-                      >
-                        <span className="text-xs sm:text-sm truncate flex-1 mr-2">
-                          {playerName}
-                        </span>
-                        <Button
-                          onClick={() => removePlayerFromList(playerName)}
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2 text-xs shrink-0"
+                    {[...sessionState.playerNames]
+                      .reverse()
+                      .map((playerName, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-muted p-2 sm:p-3 rounded"
                         >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
+                          <span className="text-xs sm:text-sm truncate flex-1 mr-2">
+                            {playerName}
+                          </span>
+                          <Button
+                            onClick={() => removePlayerFromList(playerName)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-xs shrink-0"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}
@@ -354,20 +358,19 @@ export default function CreateSession() {
                 >
                   Add
                 </Button>
-              </div>
-
-              <div className="flex flex-col gap-2 pt-2">
                 <Button
                   onClick={startGameSession}
                   disabled={
                     sessionState.playerNames.length <
                     sessionState.numberOfCourts * 4
                   }
-                  className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold"
+                  className="h-10 sm:h-12 text-sm sm:text-base font-semibold"
                 >
-                  Start Games ({sessionState.playerNames.length}/
-                  {sessionState.numberOfCourts * 4}+ players)
+                  Go!
                 </Button>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2">
                 <Button
                   onClick={returnToPreviousStep}
                   variant="ghost"
@@ -386,8 +389,8 @@ export default function CreateSession() {
   };
 
   return (
-    <div className="min-h-screen p-3 sm:p-4 bg-background">
-      <div className="w-full max-w-md mx-auto pt-4 sm:pt-8">
+    <div className="min-h-screen p-2 sm:p-4 bg-background">
+      <div className="w-full max-w-md mx-auto pt-2 sm:pt-8">
         {renderProgressIndicator()}
         {renderCurrentStep()}
       </div>
