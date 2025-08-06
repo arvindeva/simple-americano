@@ -1,0 +1,18 @@
+{
+  "name": "Americano Padel",
+  "short_name": "Americano",
+  "description": "Tournament organizer for fair and fun padel matches",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/next.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["sports", "games", "utilities"]
+}
