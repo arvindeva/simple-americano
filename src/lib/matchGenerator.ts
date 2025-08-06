@@ -1,248 +1,374 @@
-import { Player, Match, MatchGenerationStats, TeamCombination } from '@/types';
-import { nanoid } from 'nanoid';
+import { Player, Match, MatchGenerationStats, TeamCombination } from "@/types";
+import { nanoid } from "nanoid";
 
-// Penalty Configuration - Adjust these values to fine-tune match generation behavior
+// Debug mode toggle
+const DEBUG = true;
+
+// Penalty Configuration
 const PENALTY_CONFIG = {
-  // High penalty when both players haven't partnered with everyone yet (early tournament)
   HIGH_TEAMMATE_REPEAT_PENALTY: 20,
-  // Low penalty when at least one player has partnered with everyone (late tournament)
   LOW_TEAMMATE_REPEAT_PENALTY: 2,
-  // Penalty for playing same opponent multiple times (kept low to prioritize fairness)
-  OPPONENT_REPEAT_PENALTY: 1
+  OPPONENT_REPEAT_PENALTY: 1,
 } as const;
 
-export function generateRoundMatches(playersList: Player[], existingMatches: Match[], numberOfCourts: number): Match[] {
+export function generateRoundMatches(
+  playersList: Player[],
+  existingMatches: Match[],
+  numberOfCourts: number
+): Match[] {
   if (playersList.length < numberOfCourts * 4) {
-    throw new Error(`Need at least ${numberOfCourts * 4} players to generate ${numberOfCourts} matches`);
+    throw new Error(
+      `Need at least ${
+        numberOfCourts * 4
+      } players to generate ${numberOfCourts} matches`
+    );
   }
 
-  const nextRoundNumber = Math.max(0, ...existingMatches.map(match => match.roundNumber)) + 1;
+  const nextRoundNumber =
+    Math.max(0, ...existingMatches.map((match) => match.roundNumber)) + 1;
   const roundMatches: Match[] = [];
   const usedPlayers = new Set<string>();
 
   for (let courtIndex = 0; courtIndex < numberOfCourts; courtIndex++) {
-    // Calculate player stats including matches from this round
     const allMatches = [...existingMatches, ...roundMatches];
     const playerStats = calculatePlayerStats(playersList, allMatches);
-    
-    // Get available players for this match
-    const availablePlayers = playerStats.filter(stats => !usedPlayers.has(stats.playerName));
-    
+
+    const availablePlayers = playerStats.filter(
+      (stats) => !usedPlayers.has(stats.playerName)
+    );
+
+    // Shuffle available players for court assignment fairness
+    for (let i = availablePlayers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [availablePlayers[i], availablePlayers[j]] = [
+        availablePlayers[j],
+        availablePlayers[i],
+      ];
+    }
+
     if (availablePlayers.length < 4) {
-      throw new Error(`Not enough available players for match ${courtIndex + 1}`);
+      throw new Error(
+        `Not enough available players for match ${courtIndex + 1}`
+      );
     }
 
     const selectedPlayers = selectPlayersForNextMatch(availablePlayers);
-    const optimalTeams = findOptimalTeamCombination(selectedPlayers, playerStats);
-    
-    // Mark these players as used for this round
-    [...optimalTeams.firstTeam, ...optimalTeams.secondTeam].forEach(player => {
-      usedPlayers.add(player);
-    });
+    const optimalTeams = findOptimalTeamCombination(
+      selectedPlayers,
+      playerStats
+    );
+
+    [...optimalTeams.firstTeam, ...optimalTeams.secondTeam].forEach(
+      (player) => {
+        usedPlayers.add(player);
+      }
+    );
+
+    if (DEBUG) {
+      console.log(
+        `\n--- Match ${courtIndex + 1}, Round ${nextRoundNumber} ---`
+      );
+      console.log(`Selected Players: ${selectedPlayers.join(", ")}`);
+      console.log(`First Team: ${optimalTeams.firstTeam.join(" & ")}`);
+      console.log(`Second Team: ${optimalTeams.secondTeam.join(" & ")}`);
+    }
 
     roundMatches.push({
       matchId: nanoid(),
       roundNumber: nextRoundNumber,
       firstTeam: optimalTeams.firstTeam,
       secondTeam: optimalTeams.secondTeam,
-      matchScore: null
+      matchScore: null,
     });
+  }
+
+  // NEW: print accumulated pair history from all matches so far
+  if (DEBUG) {
+    logPairHistory(playersList, [...existingMatches, ...roundMatches]);
   }
 
   return roundMatches;
 }
 
-export function generateFairMatch(playersList: Player[], existingMatches: Match[]): Match {
+export function generateFairMatch(
+  playersList: Player[],
+  existingMatches: Match[]
+): Match {
   const playerStats = calculatePlayerStats(playersList, existingMatches);
   const selectedPlayers = selectPlayersForNextMatch(playerStats);
   const optimalTeams = findOptimalTeamCombination(selectedPlayers, playerStats);
-  
-  const nextRoundNumber = Math.max(0, ...existingMatches.map(match => match.roundNumber)) + 1;
-  
+
+  const nextRoundNumber =
+    Math.max(0, ...existingMatches.map((match) => match.roundNumber)) + 1;
+
   return {
     matchId: nanoid(),
     roundNumber: nextRoundNumber,
     firstTeam: optimalTeams.firstTeam,
     secondTeam: optimalTeams.secondTeam,
-    matchScore: null
+    matchScore: null,
   };
 }
 
-function calculatePlayerStats(playersList: Player[], existingMatches: Match[]): MatchGenerationStats[] {
-  return playersList.map(player => {
+function calculatePlayerStats(
+  playersList: Player[],
+  existingMatches: Match[]
+): MatchGenerationStats[] {
+  return playersList.map((player) => {
     const playerName = player.name;
     const teammateCount: Record<string, number> = {};
     const opponentCount: Record<string, number> = {};
     const partnersPlayedWith = new Set<string>();
     let gamesPlayed = 0;
-    
-    existingMatches.forEach(match => {
+
+    existingMatches.forEach((match) => {
       const isInFirstTeam = match.firstTeam.includes(playerName);
       const isInSecondTeam = match.secondTeam.includes(playerName);
-      
+
       if (isInFirstTeam || isInSecondTeam) {
-        // Calculate gamesPlayed from actual match participation
         gamesPlayed++;
-        
+
         if (isInFirstTeam) {
-          match.firstTeam.forEach(teammate => {
+          match.firstTeam.forEach((teammate) => {
             if (teammate !== playerName) {
               teammateCount[teammate] = (teammateCount[teammate] || 0) + 1;
               partnersPlayedWith.add(teammate);
             }
           });
-          match.secondTeam.forEach(opponent => {
+          match.secondTeam.forEach((opponent) => {
             opponentCount[opponent] = (opponentCount[opponent] || 0) + 1;
           });
         } else if (isInSecondTeam) {
-          match.secondTeam.forEach(teammate => {
+          match.secondTeam.forEach((teammate) => {
             if (teammate !== playerName) {
               teammateCount[teammate] = (teammateCount[teammate] || 0) + 1;
               partnersPlayedWith.add(teammate);
             }
           });
-          match.firstTeam.forEach(opponent => {
+          match.firstTeam.forEach((opponent) => {
             opponentCount[opponent] = (opponentCount[opponent] || 0) + 1;
           });
         }
       }
     });
-    
+
     return {
       playerName,
-      gamesPlayed, // Now calculated from existingMatches instead of relying on player.gamesPlayed
+      gamesPlayed,
       teammateCount,
       opponentCount,
-      partnersPlayedWith
+      partnersPlayedWith,
     };
   });
 }
 
-function selectPlayersForNextMatch(playerStats: MatchGenerationStats[]): string[] {
-  if (playerStats.length < 4) {
-    throw new Error('Need at least 4 players to generate a match');
+// Force at least one unplayed partner for fairness anchor
+function selectPlayersForNextMatch(
+  playerStats: MatchGenerationStats[]
+): string[] {
+  if (playerStats.length < 4)
+    throw new Error("Need at least 4 players to generate a match");
+
+  const anchorPlayer = [...playerStats].sort(
+    (a, b) => a.gamesPlayed - b.gamesPlayed
+  )[0];
+
+  const unplayedPartners = playerStats
+    .filter(
+      (p) =>
+        p.playerName !== anchorPlayer.playerName &&
+        !anchorPlayer.partnersPlayedWith.has(p.playerName)
+    )
+    .sort((a, b) => a.gamesPlayed - b.gamesPlayed);
+
+  const selected: MatchGenerationStats[] = [anchorPlayer];
+  let forcedPartner: string | null = null;
+  if (unplayedPartners.length > 0) {
+    selected.push(unplayedPartners[0]);
+    forcedPartner = unplayedPartners[0].playerName;
   }
-  
-  const minimumGamesPlayed = Math.min(...playerStats.map(stats => stats.gamesPlayed));
-  let eligiblePlayers = playerStats.filter(stats => stats.gamesPlayed === minimumGamesPlayed);
-  
-  if (eligiblePlayers.length < 4) {
-    const sortedByGames = [...playerStats].sort((a, b) => a.gamesPlayed - b.gamesPlayed);
-    eligiblePlayers = sortedByGames.slice(0, 4);
-  }
-  
-  // Use Fisher-Yates shuffle for better randomization
-  const shuffledEligiblePlayers = [...eligiblePlayers];
-  for (let i = shuffledEligiblePlayers.length - 1; i > 0; i--) {
+
+  const remaining = playerStats
+    .filter((p) => !selected.includes(p))
+    .sort((a, b) => a.gamesPlayed - b.gamesPlayed);
+
+  selected.push(...remaining.slice(0, 4 - selected.length));
+
+  const others = selected.slice(1);
+  for (let i = others.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffledEligiblePlayers[i], shuffledEligiblePlayers[j]] = [shuffledEligiblePlayers[j], shuffledEligiblePlayers[i]];
+    [others[i], others[j]] = [others[j], others[i]];
   }
-  
-  return shuffledEligiblePlayers.slice(0, 4).map(stats => stats.playerName);
+
+  if (DEBUG) {
+    console.log(`\nAnchor Player: ${anchorPlayer.playerName}`);
+    if (forcedPartner) {
+      console.log(`Forced Unplayed Partner: ${forcedPartner}`);
+    } else {
+      console.log(`No unplayed partner available for anchor`);
+    }
+    console.log(
+      `Filled Remaining Slots With: ${others
+        .map((p) => p.playerName)
+        .join(", ")}`
+    );
+  }
+
+  return [anchorPlayer.playerName, ...others.map((s) => s.playerName)];
 }
 
-function findOptimalTeamCombination(selectedPlayers: string[], playerStats: MatchGenerationStats[]): TeamCombination {
-  if (selectedPlayers.length !== 4) {
-    throw new Error('Exactly 4 players required for team combination');
-  }
-  
-  const [firstPlayer, secondPlayer, thirdPlayer, fourthPlayer] = selectedPlayers;
-  
-  if (!firstPlayer || !secondPlayer || !thirdPlayer || !fourthPlayer) {
-    throw new Error('All player names must be valid');
-  }
-  
-  const possibleCombinations: TeamCombination[] = [
-    {
-      firstTeam: [firstPlayer, secondPlayer],
-      secondTeam: [thirdPlayer, fourthPlayer],
-      combinationScore: 0
-    },
-    {
-      firstTeam: [firstPlayer, thirdPlayer],
-      secondTeam: [secondPlayer, fourthPlayer],
-      combinationScore: 0
-    },
-    {
-      firstTeam: [firstPlayer, fourthPlayer],
-      secondTeam: [secondPlayer, thirdPlayer],
-      combinationScore: 0
-    }
-  ];
-  
-  possibleCombinations.forEach(combination => {
-    combination.combinationScore = calculateCombinationScore(combination, playerStats);
-  });
-  
-  // Find the best score
-  const bestScore = Math.max(...possibleCombinations.map(c => c.combinationScore));
-  const bestCombinations = possibleCombinations.filter(c => c.combinationScore === bestScore);
-  
-  // If multiple combinations have the same score (like in the first match), pick randomly
-  const randomIndex = Math.floor(Math.random() * bestCombinations.length);
-  return bestCombinations[randomIndex];
-}
+// Hard teammate coverage rule
+function findOptimalTeamCombination(
+  selectedPlayers: string[],
+  playerStats: MatchGenerationStats[]
+): TeamCombination {
+  if (selectedPlayers.length !== 4)
+    throw new Error("Exactly 4 players required");
 
-function calculateCombinationScore(combination: TeamCombination, playerStats: MatchGenerationStats[]): number {
-  let totalScore = 0;
-  
-  const playerStatsMap = new Map(playerStats.map(stats => [stats.playerName, stats]));
-  
-  // Fairness priority: Subtract games played (main driver)
-  [...combination.firstTeam, ...combination.secondTeam].forEach(playerName => {
-    const playerStat = playerStatsMap.get(playerName);
-    if (playerStat) {
-      totalScore -= playerStat.gamesPlayed;
-    }
-  });
-  
-  const [firstTeamPlayer1, firstTeamPlayer2] = combination.firstTeam;
-  const [secondTeamPlayer1, secondTeamPlayer2] = combination.secondTeam;
-  
-  const firstTeamPlayer1Stats = playerStatsMap.get(firstTeamPlayer1);
-  const firstTeamPlayer2Stats = playerStatsMap.get(firstTeamPlayer2);
-  const secondTeamPlayer1Stats = playerStatsMap.get(secondTeamPlayer1);
-  const secondTeamPlayer2Stats = playerStatsMap.get(secondTeamPlayer2);
-  
-  // Calculate total possible partners (excluding self)
+  const playerStatsMap = new Map(playerStats.map((s) => [s.playerName, s]));
   const maxPartners = playerStats.length - 1;
-  
-  // Scaled penalty for first team teammate repeats
-  if (firstTeamPlayer1Stats && firstTeamPlayer2Stats) {
-    const repeats = firstTeamPlayer1Stats.teammateCount[firstTeamPlayer2] || 0;
-    const p1Coverage = firstTeamPlayer1Stats.partnersPlayedWith.size;
-    const p2Coverage = firstTeamPlayer2Stats.partnersPlayedWith.size;
-    
-    // High penalty if both players haven't teamed with everyone yet, low penalty otherwise
-    const penalty = (p1Coverage < maxPartners && p2Coverage < maxPartners) 
-      ? PENALTY_CONFIG.HIGH_TEAMMATE_REPEAT_PENALTY 
-      : PENALTY_CONFIG.LOW_TEAMMATE_REPEAT_PENALTY;
-    totalScore -= penalty * repeats;
+
+  const combinations: TeamCombination[] = [
+    {
+      firstTeam: [selectedPlayers[0], selectedPlayers[1]],
+      secondTeam: [selectedPlayers[2], selectedPlayers[3]],
+      combinationScore: 0,
+    },
+    {
+      firstTeam: [selectedPlayers[0], selectedPlayers[2]],
+      secondTeam: [selectedPlayers[1], selectedPlayers[3]],
+      combinationScore: 0,
+    },
+    {
+      firstTeam: [selectedPlayers[0], selectedPlayers[3]],
+      secondTeam: [selectedPlayers[1], selectedPlayers[2]],
+      combinationScore: 0,
+    },
+  ];
+
+  const filtered = combinations.filter(({ firstTeam, secondTeam }) => {
+    const [f1, f2] = firstTeam;
+    const [s1, s2] = secondTeam;
+
+    const f1Stats = playerStatsMap.get(f1)!;
+    const f2Stats = playerStatsMap.get(f2)!;
+    const s1Stats = playerStatsMap.get(s1)!;
+    const s2Stats = playerStatsMap.get(s2)!;
+
+    const fRepeat = (f1Stats.teammateCount[f2] || 0) > 0;
+    const sRepeat = (s1Stats.teammateCount[s2] || 0) > 0;
+
+    const fHasUnplayed =
+      f1Stats.partnersPlayedWith.size < maxPartners &&
+      f2Stats.partnersPlayedWith.size < maxPartners;
+    const sHasUnplayed =
+      s1Stats.partnersPlayedWith.size < maxPartners &&
+      s2Stats.partnersPlayedWith.size < maxPartners;
+
+    return !(fRepeat && fHasUnplayed) && !(sRepeat && sHasUnplayed);
+  });
+
+  if (DEBUG) {
+    console.log(
+      `Filtered Out ${
+        combinations.length - filtered.length
+      } Invalid Combinations`
+    );
   }
-  
-  // Scaled penalty for second team teammate repeats
-  if (secondTeamPlayer1Stats && secondTeamPlayer2Stats) {
-    const repeats = secondTeamPlayer1Stats.teammateCount[secondTeamPlayer2] || 0;
-    const p1Coverage = secondTeamPlayer1Stats.partnersPlayedWith.size;
-    const p2Coverage = secondTeamPlayer2Stats.partnersPlayedWith.size;
-    
-    // High penalty if both players haven't teamed with everyone yet, low penalty otherwise
-    const penalty = (p1Coverage < maxPartners && p2Coverage < maxPartners) 
-      ? PENALTY_CONFIG.HIGH_TEAMMATE_REPEAT_PENALTY 
-      : PENALTY_CONFIG.LOW_TEAMMATE_REPEAT_PENALTY;
-    totalScore -= penalty * repeats;
-  }
-  
-  // Keep opponent repeat penalty low to maintain fairness priority
-  combination.firstTeam.forEach(firstTeamPlayer => {
-    combination.secondTeam.forEach(secondTeamPlayer => {
-      const playerStat = playerStatsMap.get(firstTeamPlayer);
+
+  const candidates = filtered.length > 0 ? filtered : combinations;
+
+  candidates.forEach((c) => {
+    c.combinationScore = calculateCombinationScore(c, playerStats);
+  });
+
+  const bestScore = Math.max(...candidates.map((c) => c.combinationScore));
+  const bestCombinations = candidates.filter(
+    (c) => c.combinationScore === bestScore
+  );
+
+  return bestCombinations[Math.floor(Math.random() * bestCombinations.length)];
+}
+
+function calculateCombinationScore(
+  combination: TeamCombination,
+  playerStats: MatchGenerationStats[]
+): number {
+  let totalScore = 0;
+
+  const playerStatsMap = new Map(
+    playerStats.map((stats) => [stats.playerName, stats])
+  );
+
+  [...combination.firstTeam, ...combination.secondTeam].forEach(
+    (playerName) => {
+      const playerStat = playerStatsMap.get(playerName);
       if (playerStat) {
-        const opponentRepeats = playerStat.opponentCount[secondTeamPlayer] || 0;
+        totalScore -= playerStat.gamesPlayed;
+      }
+    }
+  );
+
+  const [f1, f2] = combination.firstTeam;
+  const [s1, s2] = combination.secondTeam;
+
+  const f1Stats = playerStatsMap.get(f1);
+  const f2Stats = playerStatsMap.get(f2);
+  const s1Stats = playerStatsMap.get(s1);
+  const s2Stats = playerStatsMap.get(s2);
+
+  const maxPartners = playerStats.length - 1;
+
+  if (f1Stats && f2Stats) {
+    const repeats = f1Stats.teammateCount[f2] || 0;
+    const penalty =
+      f1Stats.partnersPlayedWith.size < maxPartners &&
+      f2Stats.partnersPlayedWith.size < maxPartners
+        ? PENALTY_CONFIG.HIGH_TEAMMATE_REPEAT_PENALTY
+        : PENALTY_CONFIG.LOW_TEAMMATE_REPEAT_PENALTY;
+    totalScore -= penalty * repeats;
+  }
+
+  if (s1Stats && s2Stats) {
+    const repeats = s1Stats.teammateCount[s2] || 0;
+    const penalty =
+      s1Stats.partnersPlayedWith.size < maxPartners &&
+      s2Stats.partnersPlayedWith.size < maxPartners
+        ? PENALTY_CONFIG.HIGH_TEAMMATE_REPEAT_PENALTY
+        : PENALTY_CONFIG.LOW_TEAMMATE_REPEAT_PENALTY;
+    totalScore -= penalty * repeats;
+  }
+
+  combination.firstTeam.forEach((ftPlayer) => {
+    combination.secondTeam.forEach((stPlayer) => {
+      const playerStat = playerStatsMap.get(ftPlayer);
+      if (playerStat) {
+        const opponentRepeats = playerStat.opponentCount[stPlayer] || 0;
         totalScore -= PENALTY_CONFIG.OPPONENT_REPEAT_PENALTY * opponentRepeats;
       }
     });
   });
-  
+
   return totalScore;
+}
+
+// NEW: Derive and log full pair history from matches
+function logPairHistory(playersList: Player[], matches: Match[]) {
+  const pairHistory = new Map<string, string[]>();
+  playersList.forEach((p) => pairHistory.set(p.name, []));
+
+  matches.forEach((match) => {
+    const addPair = (p1: string, p2: string) => {
+      pairHistory.get(p1)?.push(p2);
+    };
+    addPair(match.firstTeam[0], match.firstTeam[1]);
+    addPair(match.firstTeam[1], match.firstTeam[0]);
+    addPair(match.secondTeam[0], match.secondTeam[1]);
+    addPair(match.secondTeam[1], match.secondTeam[0]);
+  });
+
+  console.log(`\n=== PAIR HISTORY ===`);
+  for (const [player, partners] of pairHistory.entries()) {
+    console.log(`${player}'s pair: ${partners.join("")}`);
+  }
 }

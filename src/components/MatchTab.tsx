@@ -32,7 +32,9 @@ export default function MatchTab({ session }: MatchTabProps) {
     useSessionStore();
   const [currentRound, setCurrentRound] = useState(session.currentRoundNumber);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [animationDirection, setAnimationDirection] = useState<"forward" | "backward">("forward");
+  const [animationDirection, setAnimationDirection] = useState<
+    "forward" | "backward"
+  >("forward");
   const [scoreModalState, setScoreModalState] = useState<{
     isOpen: boolean;
     selectedTeam: "team1" | "team2";
@@ -60,7 +62,6 @@ export default function MatchTab({ session }: MatchTabProps) {
 
   const handlePreviousRound = () => {
     if (canNavigatePrevious && !isAnimating) {
-      console.log("🔄 Button clicked: PREVIOUS (setting direction to backward)");
       setAnimationDirection("backward");
       setIsAnimating(true);
       setTimeout(() => setCurrentRound(currentRound - 1), 10);
@@ -69,7 +70,6 @@ export default function MatchTab({ session }: MatchTabProps) {
 
   const handleNextRound = () => {
     if (canNavigateNext && !isAnimating) {
-      console.log("🔄 Button clicked: NEXT (setting direction to forward)");
       setAnimationDirection("forward");
       setIsAnimating(true);
       setTimeout(() => setCurrentRound(currentRound + 1), 10);
@@ -78,7 +78,6 @@ export default function MatchTab({ session }: MatchTabProps) {
 
   const handleGenerateNextRound = () => {
     if (!isAnimating) {
-      console.log("🔄 Button clicked: GENERATE NEXT (setting direction to forward)");
       setAnimationDirection("forward");
       setIsAnimating(true);
       setTimeout(() => {
@@ -185,34 +184,42 @@ export default function MatchTab({ session }: MatchTabProps) {
       </div>
 
       <div className="relative overflow-hidden">
-        <AnimatePresence 
-          mode="wait" 
+        <AnimatePresence
+          mode="wait"
           onExitComplete={() => setIsAnimating(false)}
         >
           <motion.div
             key={currentRound}
             initial={{
               x: animationDirection === "forward" ? "100%" : "-100%",
-              opacity: 0
+              opacity: 0,
             }}
             animate={{
               x: 0,
-              opacity: 1
+              opacity: 1,
             }}
             exit={{
               x: animationDirection === "forward" ? "-100%" : "100%",
-              opacity: 0
+              opacity: 0,
             }}
             onAnimationStart={() => {
-              console.log(`✅ Animation ENTER: direction=${animationDirection}, entering from ${animationDirection === 'forward' ? 'right' : 'left'}`);
+              console.log(
+                `✅ Animation ENTER: direction=${animationDirection}, entering from ${
+                  animationDirection === "forward" ? "right" : "left"
+                }`
+              );
             }}
             onAnimationComplete={() => {
-              console.log(`❌ Animation EXIT: direction=${animationDirection}, exiting to ${animationDirection === 'forward' ? 'left' : 'right'}`);
+              console.log(
+                `❌ Animation EXIT: direction=${animationDirection}, exiting to ${
+                  animationDirection === "forward" ? "left" : "right"
+                }`
+              );
             }}
             transition={{
               type: "tween",
               ease: [0.22, 1, 0.36, 1],
-              duration: 0.3
+              duration: 0.3,
             }}
             className="space-y-4"
           >
@@ -281,7 +288,11 @@ export default function MatchTab({ session }: MatchTabProps) {
       </div>
 
       <div className="flex items-center justify-center gap-4 pt-4 border-t">
-        <Button variant="outline" onClick={handleShareSession} className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          onClick={handleShareSession}
+          className="flex items-center gap-2"
+        >
           <Share2 className="h-4 w-4" />
           Share
         </Button>
