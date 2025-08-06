@@ -155,7 +155,7 @@ export default function CreateSession() {
     const progressItems = [];
 
     if (sessionState.currentStep > 1 && sessionState.tournamentName) {
-      progressItems.push(`Tournament: ${sessionState.tournamentName}`);
+      progressItems.push(sessionState.tournamentName);
     }
     if (sessionState.currentStep > 2 && sessionState.numberOfCourts > 0) {
       progressItems.push(
@@ -172,7 +172,6 @@ export default function CreateSession() {
 
     return (
       <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
-        <div className="text-xs text-muted-foreground mb-1">Selected:</div>
         <div className="text-sm font-medium">{progressItems.join(" • ")}</div>
       </div>
     );
@@ -306,17 +305,17 @@ export default function CreateSession() {
       case 4:
         return (
           <Card className="w-full">
-            <CardHeader className="text-center p-4 sm:p-6">
+            <CardHeader className="text-center p-2 sm:p-4">
               <CardTitle className="text-sm sm:text-lg">Add Players</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                Minimum {sessionState.numberOfCourts * 4} players required ({sessionState.numberOfCourts} court{sessionState.numberOfCourts > 1 ? 's' : ''} × 4 players each)
+                Minimum {sessionState.numberOfCourts * 4} players required.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
               {sessionState.playerNames.length > 0 && (
                 <div className="space-y-2">
                   <div className="space-y-1 max-h-32 sm:max-h-40 overflow-y-auto">
-                    {sessionState.playerNames.map((playerName, index) => (
+                    {[...sessionState.playerNames].reverse().map((playerName, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-between bg-muted p-2 sm:p-3 rounded"
@@ -360,10 +359,14 @@ export default function CreateSession() {
               <div className="flex flex-col gap-2 pt-2">
                 <Button
                   onClick={startGameSession}
-                  disabled={sessionState.playerNames.length < sessionState.numberOfCourts * 4}
+                  disabled={
+                    sessionState.playerNames.length <
+                    sessionState.numberOfCourts * 4
+                  }
                   className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold"
                 >
-                  Start Games ({sessionState.playerNames.length}/{sessionState.numberOfCourts * 4}+ players)
+                  Start Games ({sessionState.playerNames.length}/
+                  {sessionState.numberOfCourts * 4}+ players)
                 </Button>
                 <Button
                   onClick={returnToPreviousStep}
