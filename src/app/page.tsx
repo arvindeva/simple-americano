@@ -43,20 +43,17 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background p-3 sm:p-4">
-      <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
-        <header className="text-center py-6 sm:py-8 relative">
-          <div className="absolute top-4 right-4">
+      <div className="max-w-2xl mx-auto space-y-2 sm:space-y-6">
+        <header className="text-center py-2 sm:py-4 relative">
+          <div className="absolute top-1 right-1">
             <ThemeToggle />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-            Americano Padel
+          <h1 className="text-2xl sm:text-3xl font-bold py-4">
+            Americano Generator
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground px-4">
-            Tournament organizer for fair and fun matches
-          </p>
         </header>
 
-        <div className="flex justify-center px-4">
+        <div className="flex justify-center px-4 mb-8">
           <Link href="/create">
             <div className="relative overflow-hidden rounded-lg">
               <ShineBorder
@@ -68,7 +65,7 @@ export default function HomePage() {
                 size="lg"
                 className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-12 sm:h-auto bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg"
               >
-                Create New Tournament
+                Create Tournament!
               </Button>
             </div>
           </Link>
