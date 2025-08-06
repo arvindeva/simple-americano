@@ -57,7 +57,7 @@ export default function HomePage() {
 
         <div className="flex justify-center px-4 mb-8">
           <Link href="/create">
-            <div className="relative overflow-hidden rounded-lg">
+            <div className="relative overflow-hidden rounded-lg transition-all duration-75 active:scale-95">
               <ShineBorder
                 shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]}
                 duration={3}
@@ -65,7 +65,7 @@ export default function HomePage() {
               />
               <Button
                 size="lg"
-                className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-12 sm:h-auto bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg"
+                className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 h-12 sm:h-auto bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg active:scale-100"
               >
                 Create Tournament!
               </Button>

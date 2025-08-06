@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Share2, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +31,8 @@ export default function MatchTab({ session }: MatchTabProps) {
   const { updateMatchScore, generateNextMatch, deleteSession } =
     useSessionStore();
   const [currentRound, setCurrentRound] = useState(session.currentRoundNumber);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<"forward" | "backward">("forward");
   const [scoreModalState, setScoreModalState] = useState<{
     isOpen: boolean;
     selectedTeam: "team1" | "team2";
@@ -56,20 +59,33 @@ export default function MatchTab({ session }: MatchTabProps) {
   const canNavigatePrevious = currentRound > minRound;
 
   const handlePreviousRound = () => {
-    if (canNavigatePrevious) {
-      setCurrentRound(currentRound - 1);
+    if (canNavigatePrevious && !isAnimating) {
+      console.log("🔄 Button clicked: PREVIOUS (setting direction to backward)");
+      setAnimationDirection("backward");
+      setIsAnimating(true);
+      setTimeout(() => setCurrentRound(currentRound - 1), 10);
     }
   };
 
   const handleNextRound = () => {
-    if (canNavigateNext) {
-      setCurrentRound(currentRound + 1);
+    if (canNavigateNext && !isAnimating) {
+      console.log("🔄 Button clicked: NEXT (setting direction to forward)");
+      setAnimationDirection("forward");
+      setIsAnimating(true);
+      setTimeout(() => setCurrentRound(currentRound + 1), 10);
     }
   };
 
   const handleGenerateNextRound = () => {
-    generateNextMatch(session.sessionId);
-    setCurrentRound(maxRound + 1);
+    if (!isAnimating) {
+      console.log("🔄 Button clicked: GENERATE NEXT (setting direction to forward)");
+      setAnimationDirection("forward");
+      setIsAnimating(true);
+      setTimeout(() => {
+        generateNextMatch(session.sessionId);
+        setCurrentRound(maxRound + 1);
+      }, 10);
+    }
   };
 
   const openScoreModal = (selectedTeam: "team1" | "team2", match: Match) => {
@@ -132,136 +148,170 @@ export default function MatchTab({ session }: MatchTabProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between pt-2 gap-2">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+      <div className="flex items-center justify-center pt-2 gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handlePreviousRound}
+          disabled={!canNavigatePrevious || isAnimating}
+          className="shrink-0"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <h2 className="text-sm sm:text-lg font-semibold font-quantico px-4">
+          Round {currentRound} of {maxRound || 1}
+        </h2>
+        {canNavigateNext ? (
           <Button
             variant="outline"
             size="icon"
-            onClick={handlePreviousRound}
-            disabled={!canNavigatePrevious}
+            onClick={handleNextRound}
+            disabled={isAnimating}
             className="shrink-0"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
-          <h2 className="text-sm sm:text-lg font-semibold truncate font-quantico">
-            Round {currentRound} of {maxRound || 1}
-          </h2>
-          {canNavigateNext ? (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNextRound}
-              className="shrink-0"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={handleGenerateNextRound}
-              className="px-2 sm:px-4 text-xs sm:text-sm shrink-0"
-            >
-              <span className="hidden sm:inline">Generate Next Round</span>
-              <span className="sm:hidden">Next</span>
-            </Button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="icon" onClick={handleShareSession}>
-            <Share2 className="h-4 w-4" />
+        ) : (
+          <Button
+            variant="outline"
+            onClick={handleGenerateNextRound}
+            disabled={isAnimating}
+            className="px-2 sm:px-4 text-xs sm:text-sm shrink-0"
+          >
+            <span className="hidden sm:inline">Generate Next Round</span>
+            <span className="sm:hidden">Next Round</span>
           </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Tournament</AlertDialogTitle>
-                <AlertDialogDescription className="mb-4 sm:mb-6">
-                  Are you sure you want to delete this tournament? This action
-                  cannot be undone and all match data will be lost.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteSession}>
-                  Delete Tournament
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        )}
       </div>
 
-      <div className="space-y-4">
-        {currentRoundMatches.map((match, index) => (
-          <Card key={`${match.matchId}-${index}`}>
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-center gap-4 sm:gap-6">
-                {/* Team 1 */}
-                <div className="flex flex-col items-center space-y-2 flex-1">
-                  <Button
-                    variant="outline"
-                    onClick={() => openScoreModal("team1", match)}
-                    className="text-2xl sm:text-3xl font-bold h-12 sm:h-14 min-w-[60px] sm:min-w-[80px]"
-                  >
-                    {formatScore(match.matchScore).split("-")[0] || "00"}
-                  </Button>
-                  <div className="text-center space-y-1">
-                    <div className="font-medium text-sm sm:text-base">
-                      {match.firstTeam[0]}
+      <div className="relative overflow-hidden">
+        <AnimatePresence 
+          mode="wait" 
+          onExitComplete={() => setIsAnimating(false)}
+        >
+          <motion.div
+            key={currentRound}
+            initial={{
+              x: animationDirection === "forward" ? "100%" : "-100%",
+              opacity: 0
+            }}
+            animate={{
+              x: 0,
+              opacity: 1
+            }}
+            exit={{
+              x: animationDirection === "forward" ? "-100%" : "100%",
+              opacity: 0
+            }}
+            onAnimationStart={() => {
+              console.log(`✅ Animation ENTER: direction=${animationDirection}, entering from ${animationDirection === 'forward' ? 'right' : 'left'}`);
+            }}
+            onAnimationComplete={() => {
+              console.log(`❌ Animation EXIT: direction=${animationDirection}, exiting to ${animationDirection === 'forward' ? 'left' : 'right'}`);
+            }}
+            transition={{
+              type: "tween",
+              ease: [0.22, 1, 0.36, 1],
+              duration: 0.3
+            }}
+            className="space-y-4"
+          >
+            {currentRoundMatches.map((match, index) => (
+              <Card key={`${match.matchId}-${index}`}>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center justify-center gap-4 sm:gap-6">
+                    {/* Team 1 */}
+                    <div className="flex flex-col items-center space-y-2 flex-1">
+                      <Button
+                        variant="outline"
+                        onClick={() => openScoreModal("team1", match)}
+                        className="text-2xl sm:text-3xl font-bold h-12 sm:h-14 min-w-[60px] sm:min-w-[80px]"
+                      >
+                        {formatScore(match.matchScore).split("-")[0] || "00"}
+                      </Button>
+                      <div className="text-center space-y-1">
+                        <div className="font-medium text-sm sm:text-base">
+                          {match.firstTeam[0]}
+                        </div>
+                        <div className="font-medium text-sm sm:text-base">
+                          {match.firstTeam[1]}
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-medium text-sm sm:text-base">
-                      {match.firstTeam[1]}
-                    </div>
-                  </div>
-                </div>
 
-                {/* Court # and VS */}
-                <div className="flex flex-col items-center px-2">
-                  <div className="text-sm sm:text-base font-medium text-foreground mb-1">
-                    Court {index + 1}
-                    {match.matchScore && (
-                      <span className="ml-1 text-green-600 dark:text-green-400">
-                        ✓
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-lg sm:text-xl font-bold text-muted-foreground">
-                    vs
-                  </div>
-                </div>
+                    {/* Court # and VS */}
+                    <div className="flex flex-col items-center px-2">
+                      <div className="text-sm sm:text-base font-medium text-foreground mb-1">
+                        Court {index + 1}
+                        {match.matchScore && (
+                          <span className="ml-1 text-green-600 dark:text-green-400">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-lg sm:text-xl font-bold text-muted-foreground">
+                        vs
+                      </div>
+                    </div>
 
-                {/* Team 2 */}
-                <div className="flex flex-col items-center space-y-2 flex-1">
-                  <Button
-                    variant="outline"
-                    onClick={() => openScoreModal("team2", match)}
-                    className="text-2xl sm:text-3xl font-bold h-12 sm:h-14 min-w-[60px] sm:min-w-[80px]"
-                  >
-                    {formatScore(match.matchScore).split("-")[1] || "00"}
-                  </Button>
-                  <div className="text-center space-y-1">
-                    <div className="font-medium text-sm sm:text-base">
-                      {match.secondTeam[0]}
-                    </div>
-                    <div className="font-medium text-sm sm:text-base">
-                      {match.secondTeam[1]}
+                    {/* Team 2 */}
+                    <div className="flex flex-col items-center space-y-2 flex-1">
+                      <Button
+                        variant="outline"
+                        onClick={() => openScoreModal("team2", match)}
+                        className="text-2xl sm:text-3xl font-bold h-12 sm:h-14 min-w-[60px] sm:min-w-[80px]"
+                      >
+                        {formatScore(match.matchScore).split("-")[1] || "00"}
+                      </Button>
+                      <div className="text-center space-y-1">
+                        <div className="font-medium text-sm sm:text-base">
+                          {match.secondTeam[0]}
+                        </div>
+                        <div className="font-medium text-sm sm:text-base">
+                          {match.secondTeam[1]}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </CardContent>
+              </Card>
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="flex items-center justify-center gap-4 pt-4 border-t">
+        <Button variant="outline" onClick={handleShareSession} className="flex items-center gap-2">
+          <Share2 className="h-4 w-4" />
+          Share
+        </Button>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Tournament</AlertDialogTitle>
+              <AlertDialogDescription className="mb-4 sm:mb-6">
+                Are you sure you want to delete this tournament? This action
+                cannot be undone and all match data will be lost.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteSession}>
+                Delete Tournament
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <ScoreModal

@@ -76,7 +76,7 @@ export default function CreateSession() {
   // Safety net: Close dialog and reset states if navigation takes too long
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (navigationStarted && !isPending) {
       // If navigation started but isPending is false, it likely completed
       // Close dialog after a brief moment to ensure smooth transition
@@ -182,7 +182,7 @@ export default function CreateSession() {
 
       // Mark navigation as started and use startTransition for smooth navigation
       setNavigationStarted(true);
-      
+
       startTransition(() => {
         router.push(`/session/${newSession.sessionId}`);
       });
@@ -190,7 +190,7 @@ export default function CreateSession() {
       // Reset states if session creation fails
       setIsStartingSession(false);
       setNavigationStarted(false);
-      console.error('Failed to start session:', error);
+      console.error("Failed to start session:", error);
     }
   };
 
@@ -408,7 +408,7 @@ export default function CreateSession() {
                     sessionState.playerNames.length <
                     sessionState.numberOfCourts * 4
                   }
-                  className="h-10 sm:h-12 text-sm sm:text-base font-semibold"
+                  className="h-10 sm:h-11 text-sm sm:text-base font-semibold"
                 >
                   Go!
                 </Button>
@@ -484,7 +484,9 @@ export default function CreateSession() {
                 {isStartingSession || isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {navigationStarted ? "Opening tournament..." : "Starting..."}
+                    {navigationStarted
+                      ? "Opening tournament..."
+                      : "Starting..."}
                   </>
                 ) : (
                   "Go!"
