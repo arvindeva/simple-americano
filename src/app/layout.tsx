@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${barlow.variable} antialiased`}
+        className={`${barlow.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
