@@ -25,9 +25,16 @@ export interface AmericanoSession {
 export interface SessionStore {
   sessionsMap: Record<string, AmericanoSession>;
   createSession(newSession: AmericanoSession): void;
-  updateSession(sessionId: string, sessionUpdates: Partial<AmericanoSession>): void;
+  updateSession(
+    sessionId: string,
+    sessionUpdates: Partial<AmericanoSession>
+  ): void;
   addMatchToSession(sessionId: string, newMatch: Match): void;
-  updateMatchScore(sessionId: string, matchId: string, newScore: [number, number]): void;
+  updateMatchScore(
+    sessionId: string,
+    matchId: string,
+    newScore: [number, number]
+  ): void;
   generateNextMatch(sessionId: string): void;
   deleteSession(sessionId: string): void;
 }

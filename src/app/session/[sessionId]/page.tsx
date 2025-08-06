@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { useSessionStore } from '@/store/useSessionStore';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import MatchTab from '@/components/MatchTab';
-import ResultsTab from '@/components/ResultsTab';
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useSessionStore } from "@/store/useSessionStore";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import MatchTab from "@/components/MatchTab";
+import ResultsTab from "@/components/ResultsTab";
 
 export default function SessionPage() {
   const params = useParams();
   const router = useRouter();
   const sessionId = params.sessionId as string;
-  
+
   const { sessionsMap } = useSessionStore();
   const currentSession = sessionsMap[sessionId];
 
@@ -23,7 +23,9 @@ export default function SessionPage() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold">Session not found</h1>
-          <p className="text-muted-foreground">The tournament session you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground">
+            The tournament session you're looking for doesn't exist.
+          </p>
           <Link href="/">
             <Button>Return to Home</Button>
           </Link>
@@ -33,18 +35,18 @@ export default function SessionPage() {
   }
 
   const formatSessionDate = (isoDateString: string) => {
-    return new Date(isoDateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(isoDateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
-        <header className="flex items-center gap-3 sm:gap-4 py-3 sm:py-4">
+      <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-2 sm:space-y-4">
+        <header className="flex items-center gap-2 sm:gap-3 py-2 sm:py-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="shrink-0">
               <ArrowLeft className="h-4 w-4" />
@@ -55,7 +57,10 @@ export default function SessionPage() {
               {currentSession.tournamentName}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Created {formatSessionDate(currentSession.sessionCreatedAt)} • {currentSession.playersList.length} players • {currentSession.numberOfCourts} court{currentSession.numberOfCourts !== 1 ? 's' : ''} • {currentSession.pointsPerGame} points per game
+              {currentSession.playersList.length} players •{" "}
+              {currentSession.numberOfCourts} court
+              {currentSession.numberOfCourts !== 1 ? "s" : ""} •{" "}
+              {currentSession.pointsPerGame} points per game
             </p>
           </div>
           <div className="shrink-0">
@@ -68,11 +73,11 @@ export default function SessionPage() {
             <TabsTrigger value="match">Match</TabsTrigger>
             <TabsTrigger value="results">Results</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="match">
             <MatchTab session={currentSession} />
           </TabsContent>
-          
+
           <TabsContent value="results">
             <ResultsTab session={currentSession} />
           </TabsContent>

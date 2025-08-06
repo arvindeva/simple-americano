@@ -93,12 +93,15 @@ export default function HomePage() {
                             {session.tournamentName}
                           </CardTitle>
                           <CardDescription className="mt-1 text-xs sm:text-sm">
-                            Created{" "}
-                            {formatSessionDate(session.sessionCreatedAt)} •{" "}
-                            {session.playersList.length} players •{" "}
-                            {session.numberOfCourts} court
-                            {session.numberOfCourts !== 1 ? "s" : ""} •{" "}
-                            {session.pointsPerGame} points
+                            <span className="block">
+                              {session.playersList.length} players •{" "}
+                              {session.numberOfCourts} court
+                              {session.numberOfCourts !== 1 ? "s" : ""} •{" "}
+                              {session.pointsPerGame} points
+                            </span>
+                            <span className="block mt-1">
+                              {formatSessionDate(session.sessionCreatedAt)}
+                            </span>
                           </CardDescription>
                         </div>
                         <div className="text-right text-xs sm:text-sm text-muted-foreground shrink-0">
