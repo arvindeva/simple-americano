@@ -48,8 +48,8 @@ export default function HomePage() {
           <div className="absolute top-1 right-1">
             <ThemeToggle />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold py-4">
-            Americano Generator
+          <h1 className="text-4xl sm:text-6xl font-bold py-4 font-bangers tracking-wider">
+            Americano
           </h1>
         </header>
 
