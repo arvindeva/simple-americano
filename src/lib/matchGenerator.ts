@@ -63,6 +63,7 @@ function calculatePlayerStats(playersList: Player[], existingMatches: Match[]): 
     const playerName = player.name;
     const teammateCount: Record<string, number> = {};
     const opponentCount: Record<string, number> = {};
+    const partnersPlayedWith = new Set<string>();
     
     existingMatches.forEach(match => {
       const isInFirstTeam = match.firstTeam.includes(playerName);
@@ -72,6 +73,7 @@ function calculatePlayerStats(playersList: Player[], existingMatches: Match[]): 
         match.firstTeam.forEach(teammate => {
           if (teammate !== playerName) {
             teammateCount[teammate] = (teammateCount[teammate] || 0) + 1;
+            partnersPlayedWith.add(teammate);
           }
         });
         match.secondTeam.forEach(opponent => {
@@ -81,6 +83,7 @@ function calculatePlayerStats(playersList: Player[], existingMatches: Match[]): 
         match.secondTeam.forEach(teammate => {
           if (teammate !== playerName) {
             teammateCount[teammate] = (teammateCount[teammate] || 0) + 1;
+            partnersPlayedWith.add(teammate);
           }
         });
         match.firstTeam.forEach(opponent => {
@@ -93,7 +96,8 @@ function calculatePlayerStats(playersList: Player[], existingMatches: Match[]): 
       playerName,
       gamesPlayed: player.gamesPlayed,
       teammateCount,
-      opponentCount
+      opponentCount,
+      partnersPlayedWith
     };
   });
 }
@@ -168,6 +172,7 @@ function calculateCombinationScore(combination: TeamCombination, playerStats: Ma
   
   const playerStatsMap = new Map(playerStats.map(stats => [stats.playerName, stats]));
   
+  // Fairness priority: Subtract games played (main driver)
   [...combination.firstTeam, ...combination.secondTeam].forEach(playerName => {
     const playerStat = playerStatsMap.get(playerName);
     if (playerStat) {
@@ -183,22 +188,42 @@ function calculateCombinationScore(combination: TeamCombination, playerStats: Ma
   const secondTeamPlayer1Stats = playerStatsMap.get(secondTeamPlayer1);
   const secondTeamPlayer2Stats = playerStatsMap.get(secondTeamPlayer2);
   
+  // Calculate total possible partners (excluding self)
+  const maxPartners = playerStats.length - 1;
+  
+  // Scaled penalty for first team teammate repeats
   if (firstTeamPlayer1Stats && firstTeamPlayer2Stats) {
-    const teammateRepeats = firstTeamPlayer1Stats.teammateCount[firstTeamPlayer2] || 0;
-    totalScore -= 10 * teammateRepeats;
+    const repeats = firstTeamPlayer1Stats.teammateCount[firstTeamPlayer2] || 0;
+    const p1Coverage = firstTeamPlayer1Stats.partnersPlayedWith.size;
+    const p2Coverage = firstTeamPlayer2Stats.partnersPlayedWith.size;
+    
+    // High penalty if both players haven't teamed with everyone yet, low penalty otherwise
+    const highPenalty = 20;
+    const lowPenalty = 2;
+    const penalty = (p1Coverage < maxPartners && p2Coverage < maxPartners) ? highPenalty : lowPenalty;
+    totalScore -= penalty * repeats;
   }
   
+  // Scaled penalty for second team teammate repeats
   if (secondTeamPlayer1Stats && secondTeamPlayer2Stats) {
-    const teammateRepeats = secondTeamPlayer1Stats.teammateCount[secondTeamPlayer2] || 0;
-    totalScore -= 10 * teammateRepeats;
+    const repeats = secondTeamPlayer1Stats.teammateCount[secondTeamPlayer2] || 0;
+    const p1Coverage = secondTeamPlayer1Stats.partnersPlayedWith.size;
+    const p2Coverage = secondTeamPlayer2Stats.partnersPlayedWith.size;
+    
+    // High penalty if both players haven't teamed with everyone yet, low penalty otherwise
+    const highPenalty = 20;
+    const lowPenalty = 2;
+    const penalty = (p1Coverage < maxPartners && p2Coverage < maxPartners) ? highPenalty : lowPenalty;
+    totalScore -= penalty * repeats;
   }
   
+  // Keep opponent repeat penalty low to maintain fairness priority
   combination.firstTeam.forEach(firstTeamPlayer => {
     combination.secondTeam.forEach(secondTeamPlayer => {
       const playerStat = playerStatsMap.get(firstTeamPlayer);
       if (playerStat) {
         const opponentRepeats = playerStat.opponentCount[secondTeamPlayer] || 0;
-        totalScore -= 3 * opponentRepeats;
+        totalScore -= 1 * opponentRepeats; // Reduced from 3 to 1 to keep fairness dominant
       }
     });
   });

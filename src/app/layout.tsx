@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Barlow } from "next/font/google";
 import { Bangers } from "next/font/google";
 import "./globals.css";
@@ -21,14 +21,19 @@ export const metadata: Metadata = {
   title: "Americano Padel",
   description: "Tournament organizer for fair and fun padel matches",
   manifest: "/manifest.json",
-  themeColor: "#000000",
-  viewport:
-    "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Americano Padel",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#000000",
 };
 
 export default function RootLayout({

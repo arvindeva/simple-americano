@@ -44,6 +44,7 @@ export interface MatchGenerationStats {
   gamesPlayed: number;
   teammateCount: Record<string, number>;
   opponentCount: Record<string, number>;
+  partnersPlayedWith: Set<string>;
 }
 
 export interface TeamCombination {
