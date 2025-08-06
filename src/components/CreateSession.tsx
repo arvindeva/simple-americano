@@ -247,6 +247,16 @@ export default function CreateSession() {
       case 1:
         return (
           <div className="w-full space-y-6">
+            <div className="flex items-center mb-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={returnToPreviousStep}
+                className="shrink-0 h-8 w-8"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </div>
             <div className="text-center">
               <h2 className="text-lg sm:text-xl font-semibold mb-2 font-quantico">
                 Tournament Name
