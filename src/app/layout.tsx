@@ -4,6 +4,7 @@ import { Quantico } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import ThemedTopLoader from "@/components/ThemedTopLoader";
+import { Toaster } from "@/components/ui/sonner";
 
 const barlow = Barlow({
   variable: "--font-barlow",
@@ -54,6 +55,7 @@ export default function RootLayout({
         >
           <ThemedTopLoader />
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

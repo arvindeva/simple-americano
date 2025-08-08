@@ -2,7 +2,7 @@
 
 import { useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Share2, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ import {
 import { useSessionStore } from "@/store/useSessionStore";
 import { AmericanoSession, Match } from "@/types";
 import ScoreModal from "./ScoreModal";
-import { copyToClipboard } from "@/lib/shareUtils";
 
 interface MatchTabProps {
   session: AmericanoSession;
@@ -119,27 +118,6 @@ export default function MatchTab({ session }: MatchTabProps) {
 
   const getTeamDisplayName = (teamPlayers: string[]) => {
     return teamPlayers.join(" / ");
-  };
-
-  const handleShareSession = async () => {
-    try {
-      const response = await fetch('/api/share', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(session)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create share link');
-      }
-      
-      const { shareUrl } = await response.json();
-      await copyToClipboard(shareUrl);
-      alert("Share link copied to clipboard!");
-    } catch (error) {
-      console.error('Share error:', error);
-      alert("Failed to create share link");
-    }
   };
 
   const handleDeleteSession = () => {
@@ -299,15 +277,6 @@ export default function MatchTab({ session }: MatchTabProps) {
       </div>
 
       <div className="flex items-center justify-center gap-4 pt-4 border-t">
-        <Button
-          variant="outline"
-          onClick={handleShareSession}
-          className="flex items-center gap-2"
-        >
-          <Share2 className="h-4 w-4" />
-          Share
-        </Button>
-
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
