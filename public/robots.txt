@@ -1,0 +1,24 @@
+# Robots.txt for Americano Padel Tournament App
+# Allow search engines to index the public pages
+
+User-agent: *
+Allow: /
+
+# Block indexing of shared tournament links for privacy
+Disallow: /shared/
+
+# Block API endpoints
+Disallow: /api/
+
+# Allow sitemap
+Sitemap: https://simple-americano.vercel.app/sitemap.xml
+
+# Common crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /

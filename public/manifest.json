@@ -1,18 +1,57 @@
 {
-  "name": "Americano Padel",
-  "short_name": "Americano",
-  "description": "Tournament organizer for fair and fun padel matches",
+  "name": "Americano Padel Tournament Organizer",
+  "short_name": "Americano Padel",
+  "description": "Create fair and balanced padel tournaments with smart match generation. Perfect for organizing Americano-style tournaments with friends.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "orientation": "portrait",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
-      "src": "/next.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ],
-  "categories": ["sports", "games", "utilities"]
+  "categories": ["sports", "games", "utilities", "productivity"],
+  "screenshots": [
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Create Tournament",
+      "short_name": "Create",
+      "description": "Start a new padel tournament",
+      "url": "/create",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }
