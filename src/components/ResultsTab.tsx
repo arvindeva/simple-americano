@@ -57,93 +57,90 @@ export default function ResultsTab({ session }: ResultsTabProps) {
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
-          <CardTitle className="text-base sm:text-lg font-quantico">
-            Leaderboard
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6 pt-2 sm:pt-3">
-          {/* Header Row */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 p-2 sm:p-3 mb-2 sm:mb-3 bg-muted/50 rounded-lg text-xs sm:text-sm font-medium text-muted-foreground">
-            <div className="pl-4">Name</div>
-            <div className="text-center">W-L-T</div>
-            <div className="text-center">Games</div>
-            <div className="text-center">Points</div>
-          </div>
+      <div>
+        <h3 className="text-base sm:text-lg font-quantico mb-3 sm:mb-4">
+          Leaderboard
+        </h3>
+        
+        {/* Header Row */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 p-2 sm:p-3 mb-2 sm:mb-3 bg-muted/50 rounded-lg text-xs sm:text-sm font-medium text-muted-foreground">
+          <div className="pl-4">Name</div>
+          <div className="text-center">W-L-T</div>
+          <div className="text-center">Games</div>
+          <div className="text-center">Points</div>
+        </div>
 
-          <div className="space-y-2 sm:space-y-3">
-            {sortedPlayersByPoints.map((player, index) => {
-              const ranking = getRankingPosition(
-                index,
-                player,
-                sortedPlayersByPoints
-              );
-              const isTopPlayer = ranking === 1;
+        <div className="space-y-2 sm:space-y-3">
+          {sortedPlayersByPoints.map((player, index) => {
+            const ranking = getRankingPosition(
+              index,
+              player,
+              sortedPlayersByPoints
+            );
+            const isTopPlayer = ranking === 1;
 
-              return (
-                <div
-                  key={player.name}
-                  className={`grid grid-cols-4 gap-2 sm:gap-4 items-center p-2 sm:p-3 rounded-lg ${
-                    isTopPlayer
-                      ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800"
-                      : "bg-muted"
-                  }`}
-                >
-                  {/* Name column with rank */}
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs sm:text-sm font-medium text-muted-foreground shrink-0">
-                      {ranking}.
-                    </span>
-                    <span
-                      className={`font-medium text-sm sm:text-base truncate ${
-                        isTopPlayer
-                          ? "text-yellow-700 dark:text-yellow-300"
-                          : ""
-                      }`}
-                    >
-                      {player.name}
-                    </span>
-                  </div>
-
-                  {/* W-L-T column */}
-                  <div className="text-center">
-                    <span className="text-xs sm:text-sm font-mono">
-                      {player.wins}-{player.losses}-{player.ties}
-                    </span>
-                  </div>
-
-                  {/* Games Played column */}
-                  <div className="text-center">
-                    <span className="text-xs sm:text-sm">
-                      {player.gamesPlayed}
-                    </span>
-                  </div>
-
-                  {/* Points column */}
-                  <div className="text-center">
-                    <span
-                      className={`text-sm sm:text-base font-bold ${
-                        isTopPlayer
-                          ? "text-yellow-700 dark:text-yellow-300"
-                          : ""
-                      }`}
-                    >
-                      {player.totalPoints}
-                    </span>
-                  </div>
+            return (
+              <div
+                key={player.name}
+                className={`grid grid-cols-4 gap-2 sm:gap-4 items-center p-2 sm:p-3 rounded-lg ${
+                  isTopPlayer
+                    ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800"
+                    : "bg-muted"
+                }`}
+              >
+                {/* Name column with rank */}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground shrink-0">
+                    {ranking}.
+                  </span>
+                  <span
+                    className={`font-medium text-sm sm:text-base truncate ${
+                      isTopPlayer
+                        ? "text-yellow-700 dark:text-yellow-300"
+                        : ""
+                    }`}
+                  >
+                    {player.name}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
 
-          {sortedPlayersByPoints.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No players in tournament
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                {/* W-L-T column */}
+                <div className="text-center">
+                  <span className="text-xs sm:text-sm font-mono">
+                    {player.wins}-{player.losses}-{player.ties}
+                  </span>
+                </div>
+
+                {/* Games Played column */}
+                <div className="text-center">
+                  <span className="text-xs sm:text-sm">
+                    {player.gamesPlayed}
+                  </span>
+                </div>
+
+                {/* Points column */}
+                <div className="text-center">
+                  <span
+                    className={`text-sm sm:text-base font-bold ${
+                      isTopPlayer
+                        ? "text-yellow-700 dark:text-yellow-300"
+                        : ""
+                    }`}
+                  >
+                    {player.totalPoints}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {sortedPlayersByPoints.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            No players in tournament
+          </div>
+        )}
+      </div>
 
       <Card>
         <CardHeader className="p-4 sm:p-6">

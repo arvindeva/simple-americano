@@ -1,8 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Home } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useSessionStore } from "@/store/useSessionStore";
@@ -13,7 +13,9 @@ import ResultsTab from "@/components/ResultsTab";
 export default function SessionPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const sessionId = params.sessionId as string;
+  const defaultTab = searchParams.get('tab') || 'match';
 
   const { sessionsMap } = useSessionStore();
   const currentSession = sessionsMap[sessionId];
@@ -49,7 +51,7 @@ export default function SessionPage() {
         <header className="flex items-center gap-2 sm:gap-3">
           <Link href="/">
             <Button variant="ghost" size="icon" className="shrink-0">
-              <ArrowLeft className="h-4 w-4" />
+              <Home className="h-4 w-4" />
             </Button>
           </Link>
           <div className="flex-1 min-w-0">
@@ -68,7 +70,7 @@ export default function SessionPage() {
           </div>
         </header>
 
-        <Tabs defaultValue="match" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="match">Match</TabsTrigger>
             <TabsTrigger value="results">Results</TabsTrigger>

@@ -20,7 +20,7 @@ import {
 import { useSessionStore } from "@/store/useSessionStore";
 import { AmericanoSession, Match } from "@/types";
 import ScoreModal from "./ScoreModal";
-import { exportSessionToUrl, copyToClipboard } from "@/lib/shareUtils";
+import { copyToClipboard } from "@/lib/shareUtils";
 
 interface MatchTabProps {
   session: AmericanoSession;
@@ -123,10 +123,21 @@ export default function MatchTab({ session }: MatchTabProps) {
 
   const handleShareSession = async () => {
     try {
-      const shareUrl = exportSessionToUrl(session);
+      const response = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(session)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create share link');
+      }
+      
+      const { shareUrl } = await response.json();
       await copyToClipboard(shareUrl);
       alert("Share link copied to clipboard!");
     } catch (error) {
+      console.error('Share error:', error);
       alert("Failed to create share link");
     }
   };

@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSessionStore } from "@/store/useSessionStore";
 import { AmericanoSession } from "@/types";
-import { importSessionFromUrl } from "@/lib/shareUtils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ShineBorder } from "@/components/magicui/shine-border";
 
@@ -20,13 +19,6 @@ export default function HomePage() {
   const { sessionsMap, createSession } = useSessionStore();
   const [sessionsList, setSessionsList] = useState<AmericanoSession[]>([]);
 
-  useEffect(() => {
-    const importedSession = importSessionFromUrl();
-    if (importedSession) {
-      createSession(importedSession);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [createSession]);
 
   useEffect(() => {
     setSessionsList(Object.values(sessionsMap).reverse());
@@ -111,7 +103,7 @@ export default function HomePage() {
                     <CardContent className="pt-0 p-4 sm:p-6">
                       <div className="flex items-center justify-between text-xs sm:text-sm">
                         <span className="text-muted-foreground">
-                          {session.matchesList.length} matches played
+                          {session.matchesList.filter((match) => match.matchScore !== null).length} matches played
                         </span>
                         <span className="text-primary font-medium">
                           Continue →
