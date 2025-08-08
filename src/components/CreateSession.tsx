@@ -166,8 +166,10 @@ export default function CreateSession() {
         gamesPlayed: 0,
       }));
 
+      const sessionId = nanoid();
       const newSession: AmericanoSession = {
-        sessionId: nanoid(),
+        sessionId: sessionId,
+        originalSessionId: sessionId, // New sessions are their own original
         tournamentName: sessionState.tournamentName.trim(),
         numberOfCourts: sessionState.numberOfCourts,
         pointsPerGame: sessionState.pointsPerGame,

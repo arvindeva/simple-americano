@@ -13,6 +13,7 @@ export interface Match {
 
 export interface AmericanoSession {
   sessionId: string;
+  originalSessionId?: string; // Optional for backward compatibility
   tournamentName: string;
   numberOfCourts: number;
   pointsPerGame: number;
@@ -25,6 +26,8 @@ export interface AmericanoSession {
 export interface SessionStore {
   sessionsMap: Record<string, AmericanoSession>;
   createSession(newSession: AmericanoSession): void;
+  findSessionByOriginalId(originalSessionId: string): AmericanoSession | null;
+  createOrUpdateSession(newSession: AmericanoSession): string; // Returns sessionId
   updateSession(
     sessionId: string,
     sessionUpdates: Partial<AmericanoSession>

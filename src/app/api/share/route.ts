@@ -10,8 +10,14 @@ export async function POST(request: NextRequest) {
     const session: AmericanoSession = await request.json();
     const shareId = nanoid(8); // Generate 8-character ID
     
+    // Ensure originalSessionId exists for deduplication (backward compatibility)
+    const sessionToShare: AmericanoSession = {
+      ...session,
+      originalSessionId: session.originalSessionId || session.sessionId
+    };
+    
     // Save to Redis with 30-day expiration (30 * 24 * 60 * 60 seconds)
-    await redis.setex(shareId, 30 * 24 * 60 * 60, JSON.stringify(session));
+    await redis.setex(shareId, 30 * 24 * 60 * 60, JSON.stringify(sessionToShare));
     
     const shareUrl = `${request.nextUrl.origin}/shared/${shareId}`;
     

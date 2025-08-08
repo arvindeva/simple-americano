@@ -14,7 +14,7 @@ export default function SharedSessionPage({ params }: SharedSessionPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { createSession } = useSessionStore();
+  const { createOrUpdateSession } = useSessionStore();
   const { shareId } = use(params);
 
   useEffect(() => {
@@ -33,15 +33,17 @@ export default function SharedSessionPage({ params }: SharedSessionPageProps) {
         
         const { session }: { session: AmericanoSession } = await response.json();
         
-        // Create new session with new ID (same as current import logic)
-        const newSession: AmericanoSession = {
+        // Prepare session for import with proper naming
+        const sessionToImport: AmericanoSession = {
           ...session,
-          sessionId: nanoid(),
+          sessionId: session.sessionId || nanoid(), // Keep original sessionId or generate new one
+          originalSessionId: session.originalSessionId || session.sessionId, // Preserve source identity
           tournamentName: session.tournamentName || 'Imported Tournament'
         };
         
-        createSession(newSession);
-        router.push(`/session/${newSession.sessionId}?tab=results`);
+        // Use createOrUpdateSession for deduplication
+        const finalSessionId = createOrUpdateSession(sessionToImport);
+        router.push(`/session/${finalSessionId}?tab=results`);
       } catch (err) {
         console.error('Failed to load shared session:', err);
         setError('Failed to load tournament');
@@ -51,7 +53,7 @@ export default function SharedSessionPage({ params }: SharedSessionPageProps) {
     }
     
     loadSharedSession();
-  }, [shareId, createSession, router]);
+  }, [shareId, createOrUpdateSession, router]);
 
   if (loading) {
     return (

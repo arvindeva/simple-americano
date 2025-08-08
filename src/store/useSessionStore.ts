@@ -17,6 +17,39 @@ export const useSessionStore = create<SessionStore>()(
           }
         }));
       },
+
+      findSessionByOriginalId: (originalSessionId: string) => {
+        const { sessionsMap } = get();
+        return Object.values(sessionsMap).find(
+          session => session.originalSessionId === originalSessionId || session.sessionId === originalSessionId
+        ) || null;
+      },
+
+      createOrUpdateSession: (newSession: AmericanoSession) => {
+        const { sessionsMap, findSessionByOriginalId, createSession, updateSession } = get();
+        
+        // Ensure originalSessionId exists (backward compatibility)
+        const sessionWithOriginalId = {
+          ...newSession,
+          originalSessionId: newSession.originalSessionId || newSession.sessionId
+        };
+
+        // Check if session with same original ID already exists
+        const existingSession = findSessionByOriginalId(sessionWithOriginalId.originalSessionId);
+        
+        if (existingSession) {
+          // Update existing session with new data, keep existing sessionId
+          updateSession(existingSession.sessionId, {
+            ...sessionWithOriginalId,
+            sessionId: existingSession.sessionId // Preserve local sessionId
+          });
+          return existingSession.sessionId;
+        } else {
+          // Create new session
+          createSession(sessionWithOriginalId);
+          return sessionWithOriginalId.sessionId;
+        }
+      },
       
       updateSession: (sessionId: string, sessionUpdates: Partial<AmericanoSession>) => {
         set((state) => ({
